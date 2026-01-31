@@ -1,45 +1,42 @@
-# TechStore Project: Coding Conventions and Plan
+# TechStore Project: Conventions and Architecture
 
-This document outlines the development plan, coding standards, and architectural decisions for rebuilding the TechStore project on a modern stack using PostgreSQL, Supabase, Node.js, and React.
+This document outlines the development plan, standards, and architecture for the TechStore project, which uses a PostgreSQL database on Supabase.
 
 ## 1. Project Goal
 
-The primary goal is to migrate the existing distributed MySQL-based system to a new, centralized architecture using a PostgreSQL database hosted on Supabase. This involves creating a full-stack application from the ground up, including a backend API and a frontend user interface, based on the business requirements detailed in the `DDB-CuoiKy (1).pdf` document.
+The project's goal is to build a full-stack retail management application using a Supabase-hosted PostgreSQL database. The application will be built based on the business requirements detailed in the original project PDF.
 
-## 2. Architectural Decisions
+## 2. Architecture: Supabase Auto-Generated REST API
 
--   **Database:** We will use a single, centralized PostgreSQL database provided by Supabase. The original project's distributed "sites" (HCMC, Hanoi, Da Nang) will be consolidated. The `KhuVuc` (Region) field in the `KHO` (Warehouse) table will be used to logically partition data where necessary.
--   **Backend:** A RESTful API will be built using Node.js and the Express.js framework. This backend will handle all business logic, database interactions, and report generation. It will be designed to be stateless and scalable.
--   **Frontend:** A modern, single-page application (SPA) will be developed using React and styled with Tailwind CSS. The frontend will interact with the backend via the REST API.
--   **Database Management:** All database schema changes will be managed through Supabase's migration tooling. We will use `npx supabase migration new` to create new migration files and `npx supabase db push` to apply them to the production database.
+We will **not** use a custom backend server (e.g., Node.js/Express). Instead, we will use the powerful **auto-generated REST API provided by Supabase**.
 
-## 3. Development Plan
+-   **How it works:** Supabase automatically creates a full set of RESTful endpoints for every table in the database. The frontend application will interact directly with this secure and efficient API.
+-   **Benefits:** This approach significantly simplifies development, reduces maintenance, and leverages the core strengths of the Supabase platform.
 
-The project will be developed in the following phases:
+## 3. API Usage Guide
 
-1.  **Phase 1: Database Migration (In Progress)**
-    -   Analyze the MySQL schema from the project PDF.
-    -   Translate the schema to PostgreSQL-compatible DDL.
-    -   Create a new Supabase migration file with the complete schema.
-    -   Apply the migration to the remote Supabase database.
+All API requests must be sent to your project's URL and must include your project's `anon` key for authorization.
 
-2.  **Phase 2: Backend Development**
-    -   Set up a Node.js project with Express.js.
-    -   Establish a connection to the Supabase PostgreSQL database.
-    -   Implement REST API endpoints for all CRUD operations (e.g., `/san-pham`, `/nha-cung-cap`, `/hoa-don`).
-    -   Re-implement business logic for generating reports (e.g., revenue by region, top-selling products).
+-   **API URL:** `https://iuxapijvuydijgqvojkg.supabase.co/rest/v1/`
+-   **Public Key (`anon` key):** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1eGFwaWp2dXlkaWpncXZvamtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NDA5ODEsImV4cCI6MjA4NTQxNjk4MX0.KkfBtWcbMPhqUpaVauZW_fKBpYHIsuRDvR79wscGA-k`
 
-3.  **Phase 3: Frontend Development**
-    -   Set up a React project (using Vite) with Tailwind CSS.
-    -   Build reusable UI components for displaying data (tables, forms, etc.).
-    -   Implement views for each major feature (Products, Invoices, Inventory, etc.).
-    -   Connect the UI to the backend API to provide a fully interactive experience.
+You must include the `apikey` in the headers of every request.
 
-## 4. Coding & Project Conventions
+### Example `curl` Request
 
--   **Version Control:** All changes will be committed to Git. Commit messages should be clear and descriptive, following a conventional format (e.g., `feat(backend): add user authentication`). Major milestones will be marked by commits.
--   **File Naming:** File names should be in `kebab-case.js` or `PascalCase.jsx` for React components.
--   **Database Schema:** Table and column names will follow the existing project's convention (`Pascal_Case_With_Underscores`) to maintain consistency with the business domain language (e.g., `SAN_PHAM`, `MaSP`, `NhaCungCap`).
--   **API Endpoints:** API routes will be RESTful and use `kebab-case` (e.g., `/api/san-pham/:maSP`).
--   **Environment:** Development will be done in a Windows PowerShell environment. All `supabase` commands will be run directly against the linked production project.
--   **Documentation:** All significant code, database changes, and business logic will be documented in the appropriate subdirectory within the `/Documents` folder.
+Here is how you can fetch all records from the `SAN_PHAM` table using `curl`.
+
+```bash
+curl "https://iuxapijvuydijgqvojkg.supabase.co/rest/v1/SAN_PHAM?select=*" \
+-H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1eGFwaWp2dXlkaWpncXZvamtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NDA5ODEsImV4cCI6MjA4NTQxNjk4MX0.KkfBtWcbMPhqUpaVauZW_fKBpYHIsuRDvR79wscGA-k" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1eGFwaWp2dXlkaWpncXZvamtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NDA5ODEsImV4cCI6MjA4NTQxNjk4MX0.KkfBtWcbMPhqUpaVauZW_fKBpYHIsuRDvR79wscGA-k"
+```
+
+## 4. Database Migrations
+
+All future changes to the database schema (e.g., creating tables, adding columns) **must** be done through Supabase migrations.
+
+-   **Create a new migration:** Use `npx supabase migration new <migration_name>`.
+-   **Apply the migration:** After writing your SQL in the migration file, apply it to the database using `npx supabase db push`.
+
+This ensures all schema changes are version-controlled and repeatable.
