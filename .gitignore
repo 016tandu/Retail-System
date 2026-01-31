@@ -1,0 +1,8 @@
+# Supabase
+supabase/.temp
+
+# Documents
+*.pdf
+
+# Dependencies
+/node_modules
