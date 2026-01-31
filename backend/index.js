@@ -9,9 +9,25 @@ app.use(express.json());
 
 // Import Routes
 const sanPhamRoutes = require('./routes/san-pham');
+const nhaCungCapRoutes = require('./routes/nha-cung-cap');
+const khoRoutes = require('./routes/kho');
+const nhanVienRoutes = require('./routes/nhan-vien');
+const hoaDonRoutes = require('./routes/hoa-don');
+const ctHoaDonRoutes = require('./routes/ct-hoa-don');
+const phieuNhapRoutes = require('./routes/phieu-nhap');
+const ctPhieuNhapRoutes = require('./routes/ct-phieu-nhap');
+const tonKhoRoutes = require('./routes/ton-kho');
 
 // Use Routes
 app.use('/san-pham', sanPhamRoutes);
+app.use('/nha-cung-cap', nhaCungCapRoutes);
+app.use('/kho', khoRoutes);
+app.use('/nhan-vien', nhanVienRoutes);
+app.use('/hoa-don', hoaDonRoutes);
+app.use('/ct-hoa-don', ctHoaDonRoutes);
+app.use('/phieu-nhap', phieuNhapRoutes);
+app.use('/ct-phieu-nhap', ctPhieuNhapRoutes);
+app.use('/ton-kho', tonKhoRoutes);
 
 
 // Root route
