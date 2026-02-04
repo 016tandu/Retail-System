@@ -40,3 +40,12 @@ All future changes to the database schema (e.g., creating tables, adding columns
 -   **Apply the migration:** After writing your SQL in the migration file, apply it to the database using `npx supabase db push`.
 
 This ensures all schema changes are version-controlled and repeatable.
+
+## 5. Development Workflow
+
+To ensure a structured and clear development process, the following workflow will be followed after each task:
+
+1.  **Task Completion:** Complete the user's requested task (e.g., implementing a feature, fixing a bug).
+2.  **Update Roadmap:** Open `Documents/TODO.md` and mark the just-completed task as done (e.g., change `[ ]` to `[x]`).
+3.  **Propose Next Step:** Suggest the next logical feature to implement from the `TODO.md` list.
+4.  **Await Approval:** Wait for the user's explicit approval before beginning work on the next task.
