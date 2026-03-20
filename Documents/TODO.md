@@ -13,12 +13,16 @@ This document outlines the roadmap for the TechStore application.
 
 ---
 
-## Phase 2: User Management & Authentication
+## Phase 2: User Management & Authentication (Completed)
 
--   [ ] **Feature: User Login, Logout, and Roles**
+-   [x] **Feature: User Login, Logout, and Roles**
     -   **User Perspective:** "As a user, I want to be able to log in with a username and password. Depending on my role (e.g., Admin, Warehouse Manager), I should only see the data and features relevant to me."
     -   **Business Analyst Perspective:** "We need to secure the application and ensure data integrity. Implementing Role-Based Access Control (RBAC) will prevent unauthorized users from accessing or modifying sensitive information."
     -   **Developer Perspective:** "Implement Supabase Auth. Create Row Level Security (RLS) policies on tables like `HOA_DON` and `TON_KHO` to restrict access based on the logged-in user's role or ID. Update the frontend to include login pages and manage user sessions."
+-   [x] **Implementation Details:**
+    -   Added `LoginPage` and integrated into `App.tsx`.
+    -   Enabled RLS on all tables via migration `20260320000000_enable_rls_and_policies.sql`.
+    -   Added `user_id` and `role` columns to `NHAN_VIEN` table.
 
 ---
 
@@ -28,6 +32,8 @@ This document outlines the roadmap for the TechStore application.
     -   **User Perspective:** "As a salesperson, I need a form to create a new sales invoice (`HOA_DON`). I want to be able to add multiple products (`CT_HOA_DON`) to the invoice and have the total calculated automatically."
     -   **Business Analyst Perspective:** "We need to streamline the data entry process for sales and purchasing to reduce errors and improve efficiency. This feature is critical for accurate financial and inventory tracking."
     -   **Developer Perspective:** "Build new pages/components in React for creating/editing invoices and receipts. Since this involves writing to multiple tables (`HOA_DON` and `CT_HOA_DON`) simultaneously, create a PostgreSQL function (RPC) to handle the entire transaction atomically, ensuring data consistency."
+-   [x] **Implementation Details:**
+    -   Created `create_invoice(p_ma_nv, p_ma_kho, p_items)` RPC in migration `20260321000000_create_invoice_function.sql`.
 
 ---
 
