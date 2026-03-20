@@ -1,16 +1,27 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState('Staff');
+  const [maKho, setMaKho] = useState('K01');
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [warehouses, setWarehouses] = useState<{MaKho: string, TenKho: string}[]>([]);
+
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      const { data } = await supabase.from('KHO').select('MaKho, TenKho');
+      if (data) setWarehouses(data);
+    };
+    fetchWarehouses();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +36,8 @@ const LoginPage = () => {
         options: {
           data: {
             full_name: fullName,
+            role: role,
+            ma_kho: maKho
           },
         },
       });
@@ -50,19 +63,48 @@ const LoginPage = () => {
           {isRegistering ? t('login.register_subtitle') : t('login.subtitle')}
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isRegistering && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.full_name')}</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                placeholder="Nguyễn Văn A"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.full_name')}</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  placeholder="Nguyễn Văn A"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Chức vụ</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="Staff">Nhân viên</option>
+                    <option value="Provider">Nhà cung cấp (Kho tổng)</option>
+                    <option value="Retailer">Quản lý chi nhánh</option>
+                    <option value="Admin">Quản trị viên</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Kho làm việc</label>
+                  <select
+                    value={maKho}
+                    onChange={(e) => setMaKho(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    {warehouses.map(w => (
+                      <option key={w.MaKho} value={w.MaKho}>{w.TenKho}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
           )}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.email')}</label>
@@ -71,8 +113,8 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-              placeholder="admin@techstore.com"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              placeholder="name@company.com"
             />
           </div>
           <div>
@@ -82,14 +124,14 @@ const LoginPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
             <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
-              {error}
+              {t('common.error', { message: error })}
             </div>
           )}
           

@@ -8,6 +8,7 @@ import SuppliersPage from './pages/SuppliersPage';
 import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import CreateInvoicePage from './pages/CreateInvoicePage';
+import InventoryTransferPage from './pages/InventoryTransferPage';
 import './App.css';
 
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -68,6 +69,8 @@ function App() {
     );
   }
 
+  const userRole = session.user.user_metadata?.role || 'Staff';
+
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
       <nav className="bg-white shadow-md">
@@ -80,7 +83,16 @@ function App() {
               <div className="ml-10 flex items-baseline space-x-4">
                 <NavLink to="/">{t('nav.products')}</NavLink>
                 <NavLink to="/suppliers">{t('nav.suppliers')}</NavLink>
-                <NavLink to="/create-invoice">{t('nav.create_invoice')}</NavLink>
+                
+                {/* Role-Based Links */}
+                {(userRole === 'Retailer' || userRole === 'Admin') && (
+                  <NavLink to="/create-invoice">{t('nav.create_invoice')}</NavLink>
+                )}
+                
+                {(userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && (
+                  <NavLink to="/inventory-transfer">Chuyển Kho</NavLink>
+                )}
+
                 <NavLink to="/reports">{t('nav.reports')}</NavLink>
               </div>
             </div>
@@ -92,9 +104,14 @@ function App() {
                 {i18n.language.toUpperCase()}
               </button>
               <div className="flex flex-col items-end">
-                <span className="text-sm font-bold text-gray-900">
-                  {session.user.user_metadata?.full_name || t('common.staff')}
-                </span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 uppercase">
+                    {userRole}
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {session.user.user_metadata?.full_name || t('common.staff')}
+                  </span>
+                </div>
                 <span className="text-xs text-gray-500">
                   {session.user.email}
                 </span>
@@ -117,6 +134,7 @@ function App() {
               <Route path="/" element={<ProductsPage />} />
               <Route path="/suppliers" element={<SuppliersPage />} />
               <Route path="/create-invoice" element={<CreateInvoicePage />} />
+              <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
               <Route path="/reports" element={<ReportsPage />} />
             </Routes>
           </div>

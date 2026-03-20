@@ -42,20 +42,24 @@ This document outlines the roadmap for the TechStore application.
 ## Phase 4: Advanced Features & QoL (In Progress)
 
 -   [x] **Feature: Advanced Profitability Report**
-    -   **User Perspective:** "I want a report that shows me the profit margin for each product sold within a specific date range."
-    -   **Business Analyst Perspective:** "We need deeper insights into our sales performance beyond just revenue. This report will help us identify our most and least profitable products, allowing for better strategic decisions."
-    -   **Developer Perspective:** "Create a new RPC function that joins `CT_HOA_DON` and `CT_PHIEU_NHAP` to calculate the profit for each item. Update the Reports page with a new UI to call this function and display the results."
--   [x] **Implementation Details:**
-    -   Created `calculate_profitability(p_start_date, p_end_date)` RPC in migration `20260322000000_create_profitability_report_function.sql`.
-    -   Updated `ReportsPage.tsx` with new UI and logic to display profitability data.
-    -   Integrated with i18n for multi-language support.
+-   [x] **Feature: Internationalization (i18n)** - Added VI/EN support and language switcher.
+-   [ ] **Feature: Homepage Dashboard** - High-level metrics overview.
 
--   [ ] **Feature: Inventory Transfer**
-    -   **User Perspective:** "As a warehouse manager, I need a simple way to record the transfer of stock from one warehouse to another."
-    -   **Business Analyst Perspective:** "To maintain accurate inventory counts across all locations, we need a formal process for tracking inter-warehouse stock movements."
-    -   **Developer Perspective:** "Create a new RPC function, `transfer_stock(product_id, from_kho_id, to_kho_id, quantity)`, that handles the transfer atomically (decrementing stock from one warehouse and incrementing it in another). Build a simple UI on a new 'Inventory Management' page to call this function."
+---
 
--   [ ] **Feature: Homepage Dashboard**
-    -   **User Perspective:** "When I first open the app, I want to see a dashboard with a quick overview of today's key metrics, like total sales, number of orders, and top-selling items."
-    -   **Business Analyst Perspective:** "A high-level dashboard provides an at-a-glance view of the business's daily performance, enabling quick reactions and informed decisions."
-    -   **Developer Perspective:** "Create several new, highly-optimized RPC functions to calculate the dashboard metrics. Create a new `Dashboard.tsx` page, set it as the default home route, and have it call these RPCs to display the data in summary cards."
+## Phase 5: RBAC & Advanced Inventory Workflows (New)
+
+-   [ ] **Feature: Multi-Role Authentication UI**
+    -   **User Perspective:** "I want to select my role (Retailer, Provider, Admin) during registration so the system configures my permissions correctly."
+    -   **Developer Perspective:** Update `LoginPage.tsx` to include a role dropdown.
+-   [ ] **Feature: Two-Step Inventory Transfer**
+    -   **Workflow:** 
+        1. **Provider** initiates a transfer to a Retailer branch.
+        2. **Retailer** receives a notification.
+        3. **Retailer** "Confirms" (stock moves) or "Declines" with a reason (Damaged, Wrong Product, etc.).
+    -   **Developer Perspective:** Create `STOCK_TRANSFER` and `NOTIFICATIONS` tables. Implement `initiate_transfer` and `respond_to_transfer` RPCs.
+-   [ ] **Feature: Role-Based Access Control (RBAC)**
+    -   **Permissions:**
+        - **Admin:** Full access.
+        - **Provider:** Can manage Goods Receipts (`PHIEU_NHAP`) and initiate transfers.
+        - **Retailer:** Cannot create Goods Receipts. Can create Invoices (`HOA_DON`) and confirm transfers.

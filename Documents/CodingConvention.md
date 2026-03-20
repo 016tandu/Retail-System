@@ -56,3 +56,7 @@ To ensure a structured, high-quality, and clear development process, the followi
 -   **TypeScript:** Always use TypeScript for frontend components. Avoid `any` type; define proper interfaces for data structures (e.g., `Product`, `Supplier`).
 -   **State Management:** Use React Hooks (`useState`, `useEffect`) for local state. Use the Supabase client for data fetching.
 -   **Styling:** Use Tailwind CSS for a consistent and modern look. Maintain a clean, professional, and accessible UI.
+-   **RBAC (Role-Based Access Control):** 
+    - Always check `session.user.user_metadata.role` before rendering sensitive UI elements.
+    - Implement a centralized `useRole` hook or context if complex permissions are needed.
+-   **Workflows:** Multi-step processes (like Inventory Transfer) must use database triggers or RPCs to ensure atomicity and data integrity.
