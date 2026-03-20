@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import type { Session } from '@supabase/supabase-js';
+import { useTranslation } from 'react-i18next';
 import ProductsPage from './pages/ProductsPage';
 import SuppliersPage from './pages/SuppliersPage';
 import ReportsPage from './pages/ReportsPage';
@@ -16,7 +17,7 @@ const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) =>
   const inactiveClass = 'text-gray-500 hover:bg-gray-700 hover:text-white';
 
   return (
-    <Link to={to} className={`${isActive ? activeClass : inactiveClass} px-3 py-2 rounded-md text-sm font-medium`}>
+    <Link to={to} className={`${isActive ? activeClass : inactiveClass} px-3 py-2 rounded-md text-sm font-medium transition-colors`}>
       {children}
     </Link>
   );
@@ -25,6 +26,7 @@ const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) =>
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,10 +47,15 @@ function App() {
     await supabase.auth.signOut();
   };
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'vi' ? 'en' : 'vi';
+    i18n.changeLanguage(newLang);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl font-medium">Đang tải...</p>
+        <p className="text-xl font-medium">{t('common.loading')}</p>
       </div>
     );
   }
@@ -62,25 +69,31 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800">
+    <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold text-gray-900">TechStore</Link>
+              <Link to="/" className="text-2xl font-bold text-indigo-600">TechStore</Link>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
-                <NavLink to="/">Sản Phẩm</NavLink>
-                <NavLink to="/suppliers">Nhà Cung Cấp</NavLink>
-                <NavLink to="/create-invoice">Tạo Hóa Đơn</NavLink>
-                <NavLink to="/reports">Báo Cáo</NavLink>
+                <NavLink to="/">{t('nav.products')}</NavLink>
+                <NavLink to="/suppliers">{t('nav.suppliers')}</NavLink>
+                <NavLink to="/create-invoice">{t('nav.create_invoice')}</NavLink>
+                <NavLink to="/reports">{t('nav.reports')}</NavLink>
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleLanguage}
+                className="px-2 py-1 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+              >
+                {i18n.language.toUpperCase()}
+              </button>
               <div className="flex flex-col items-end">
                 <span className="text-sm font-bold text-gray-900">
-                  {session.user.user_metadata?.full_name || 'Nhân viên'}
+                  {session.user.user_metadata?.full_name || t('common.staff')}
                 </span>
                 <span className="text-xs text-gray-500">
                   {session.user.email}
@@ -88,9 +101,9 @@ function App() {
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-2 text-gray-500 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="ml-2 text-gray-500 hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all"
               >
-                Đăng xuất
+                {t('common.logout')}
               </button>
             </div>
           </div>

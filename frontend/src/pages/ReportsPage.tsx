@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient.ts';
 
 // Define a type for the report results
@@ -26,6 +27,7 @@ const getToday = () => {
 };
 
 export default function ReportsPage() {
+  const { t } = useTranslation();
   // State for Revenue Report
   const [revenueReportData, setRevenueReportData] = useState<RevenueReport[]>([]);
   const [revenueLoading, setRevenueLoading] = useState(false);
@@ -104,30 +106,30 @@ export default function ReportsPage() {
     <div className="space-y-8">
       {/* Revenue Report Section */}
       <div className="p-4 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Báo Cáo Doanh Thu Theo Khu Vực</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('reports.revenue_region')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">Start Date</label>
+            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">{t('common.start_date')}</label>
             <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
           </div>
           <div>
-            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">End Date</label>
+            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">{t('common.end_date')}</label>
             <input type="date" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
           </div>
           <div>
-            <label htmlFor="region" className="block text-sm font-medium text-gray-700">Region</label>
+            <label htmlFor="region" className="block text-sm font-medium text-gray-700">{t('reports.region')}</label>
             <select id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-              <option value="ALL">All</option>
-              <option value="MN">Miền Nam</option>
-              <option value="MB">Miền Bắc</option>
-              <option value="MT">Miền Trung</option>
+              <option value="ALL">{t('common.all')}</option>
+              <option value="MN">{t('reports.south')}</option>
+              <option value="MB">{t('reports.north')}</option>
+              <option value="MT">{t('reports.central')}</option>
             </select>
           </div>
           <button onClick={generateRevenueReport} disabled={revenueLoading} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400">
-            {revenueLoading ? 'Generating...' : 'Generate Revenue Report'}
+            {revenueLoading ? t('reports.generating') : t('common.generate')}
           </button>
         </div>
-        {revenueError && <p className="text-center text-red-500 mt-4">Error: {revenueError}</p>}
+        {revenueError && <p className="text-center text-red-500 mt-4">{t('common.error', { message: revenueError })}</p>}
         {revenueReportData.length > 0 && (
           <div className="mt-6 overflow-x-auto relative shadow-md sm:rounded-lg">
             {/* Revenue Table */}
@@ -137,17 +139,17 @@ export default function ReportsPage() {
 
       {/* Inventory Report Section */}
       <div className="p-4 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Báo Cáo Tồn Kho Toàn Quốc</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('reports.inventory_nationwide')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="md:col-span-3">
-                <label htmlFor="product-id" className="block text-sm font-medium text-gray-700">Product ID (e.g., SP001)</label>
+                <label htmlFor="product-id" className="block text-sm font-medium text-gray-700">{t('products.code')} (e.g., SP001)</label>
                 <input type="text" id="product-id" value={productId} onChange={(e) => setProductId(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
             </div>
             <button onClick={generateInventoryReport} disabled={inventoryLoading} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400">
-                {inventoryLoading ? 'Searching...' : 'Search Inventory'}
+                {inventoryLoading ? t('reports.searching') : t('common.search')}
             </button>
         </div>
-        {inventoryError && <p className="text-center text-red-500 mt-4">Error: {inventoryError}</p>}
+        {inventoryError && <p className="text-center text-red-500 mt-4">{t('common.error', { message: inventoryError })}</p>}
         {inventoryReportData.length > 0 && (
           <div className="mt-6 overflow-x-auto relative shadow-md sm:rounded-lg">
             {/* Inventory Table */}
@@ -157,25 +159,25 @@ export default function ReportsPage() {
 
       {/* Top Selling Products Report Section */}
       <div className="p-4 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Báo Cáo Top Sản Phẩm Bán Chạy</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('reports.top_sellers')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="md:col-span-3">
-                <label htmlFor="limit" className="block text-sm font-medium text-gray-700">Number of products to show</label>
+                <label htmlFor="limit" className="block text-sm font-medium text-gray-700">{t('invoice.quantity')}</label>
                 <input type="number" id="limit" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
             </div>
             <button onClick={generateTopSellingReport} disabled={topSellingLoading} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400">
-                {topSellingLoading ? 'Generating...' : 'Generate Top Selling Report'}
+                {topSellingLoading ? t('reports.generating') : t('common.generate')}
             </button>
         </div>
-        {topSellingError && <p className="text-center text-red-500 mt-4">Error: {topSellingError}</p>}
+        {topSellingError && <p className="text-center text-red-500 mt-4">{t('common.error', { message: topSellingError })}</p>}
         {topSellingReportData.length > 0 && (
           <div className="mt-6 overflow-x-auto relative shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-500">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
-                        <th scope="col" className="py-3 px-6">Mã SP</th>
-                        <th scope="col" className="py-3 px-6">Tên Sản Phẩm</th>
-                        <th scope="col" className="py-3 px-6">Tổng Số Lượng Bán</th>
+                        <th scope="col" className="py-3 px-6">{t('products.code')}</th>
+                        <th scope="col" className="py-3 px-6">{t('reports.product_name')}</th>
+                        <th scope="col" className="py-3 px-6">{t('reports.sold_quantity')}</th>
                     </tr>
                 </thead>
                 <tbody>

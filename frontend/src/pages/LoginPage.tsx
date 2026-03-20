@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -27,7 +29,7 @@ const LoginPage = () => {
         },
       });
       if (error) setError(error.message);
-      else setMessage('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận (nếu có).');
+      else setMessage(t('login.success_msg'));
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -42,16 +44,16 @@ const LoginPage = () => {
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-md mx-auto">
       <div className="w-full p-8 bg-white rounded-xl shadow-xl border border-gray-100">
         <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
-          {isRegistering ? 'Tạo tài khoản' : 'Chào mừng trở lại'}
+          {isRegistering ? t('login.register_title') : t('login.title')}
         </h2>
         <p className="text-center text-gray-500 mb-8">
-          {isRegistering ? 'Đăng ký để quản lý kho hàng TechStore' : 'Đăng nhập vào hệ thống quản lý'}
+          {isRegistering ? t('login.register_subtitle') : t('login.subtitle')}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {isRegistering && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Họ và Tên</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.full_name')}</label>
               <input
                 type="text"
                 value={fullName}
@@ -63,7 +65,7 @@ const LoginPage = () => {
             </div>
           )}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.email')}</label>
             <input
               type="email"
               value={email}
@@ -74,7 +76,7 @@ const LoginPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">{t('login.password')}</label>
             <input
               type="password"
               value={password}
@@ -102,13 +104,13 @@ const LoginPage = () => {
             disabled={loading}
             className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-indigo-200 transition-all disabled:opacity-50 active:scale-[0.98]"
           >
-            {loading ? 'Đang xử lý...' : isRegistering ? 'Đăng ký ngay' : 'Đăng nhập'}
+            {loading ? t('login.processing') : isRegistering ? t('login.register_btn') : t('login.login_btn')}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
           <p className="text-gray-600">
-            {isRegistering ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
+            {isRegistering ? t('login.has_account') : t('login.no_account')}
             <button
               onClick={() => {
                 setIsRegistering(!isRegistering);
@@ -117,7 +119,7 @@ const LoginPage = () => {
               }}
               className="ml-2 text-indigo-600 font-bold hover:underline"
             >
-              {isRegistering ? 'Đăng nhập' : 'Đăng ký ngay'}
+              {isRegistering ? t('login.login_now') : t('login.register_now')}
             </button>
           </p>
         </div>

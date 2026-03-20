@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient.ts';
 
 // Define a type for our product data
@@ -10,6 +11,7 @@ type Product = {
 };
 
 export default function ProductsPage() {
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,26 +40,29 @@ export default function ProductsPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading products...</p>;
+    return <p className="text-center text-gray-500">{t('common.loading')}</p>;
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return <p className="text-center text-red-500">{t('common.error', { message: error })}</p>;
   }
 
   if (products.length === 0) {
-    return <p className="text-center text-gray-500">No products found.</p>;
+    return <p className="text-center text-gray-500">{t('common.no_data')}</p>;
   }
+
+  const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+  const currency = i18n.language === 'vi' ? 'VND' : 'USD';
 
   return (
     <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
       <table className="w-full text-sm text-left text-gray-500">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
-            <th scope="col" className="py-3 px-6">Mã SP</th>
-            <th scope="col" className="py-3 px-6">Tên Sản Phẩm</th>
-            <th scope="col" className="py-3 px-6">Đơn Vị Tính</th>
-            <th scope="col" className="py-3 px-6">Giá Niêm Yết</th>
+            <th scope="col" className="py-3 px-6">{t('products.code')}</th>
+            <th scope="col" className="py-3 px-6">{t('products.name')}</th>
+            <th scope="col" className="py-3 px-6">{t('products.unit')}</th>
+            <th scope="col" className="py-3 px-6">{t('products.price')}</th>
           </tr>
         </thead>
         <tbody>
@@ -68,7 +73,7 @@ export default function ProductsPage() {
               </th>
               <td className="py-4 px-6">{product.TenSP}</td>
               <td className="py-4 px-6">{product.DonViTinh}</td>
-              <td className="py-4 px-6">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.GiaNiemYet)}</td>
+              <td className="py-4 px-6">{new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(product.GiaNiemYet)}</td>
             </tr>
           ))}
         </tbody>

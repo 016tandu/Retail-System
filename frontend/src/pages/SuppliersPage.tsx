@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient.ts';
 
 // Define a type for our supplier data
@@ -10,6 +11,7 @@ type Supplier = {
 };
 
 export default function SuppliersPage() {
+  const { t } = useTranslation();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,15 +40,15 @@ export default function SuppliersPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading suppliers...</p>;
+    return <p className="text-center text-gray-500">{t('common.loading')}</p>;
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return <p className="text-center text-red-500">{t('common.error', { message: error })}</p>;
   }
 
   if (suppliers.length === 0) {
-    return <p className="text-center text-gray-500">No suppliers found.</p>;
+    return <p className="text-center text-gray-500">{t('common.no_data')}</p>;
   }
 
   return (
@@ -54,10 +56,10 @@ export default function SuppliersPage() {
       <table className="w-full text-sm text-left text-gray-500">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
-            <th scope="col" className="py-3 px-6">Mã NCC</th>
-            <th scope="col" className="py-3 px-6">Tên Nhà Cung Cấp</th>
-            <th scope="col" className="py-3 px-6">Địa Chỉ</th>
-            <th scope="col" className="py-3 px-6">Số Điện Thoại</th>
+            <th scope="col" className="py-3 px-6">{t('suppliers.code')}</th>
+            <th scope="col" className="py-3 px-6">{t('suppliers.name')}</th>
+            <th scope="col" className="py-3 px-6">{t('suppliers.address')}</th>
+            <th scope="col" className="py-3 px-6">{t('suppliers.phone')}</th>
           </tr>
         </thead>
         <tbody>
