@@ -6,6 +6,7 @@ import ProductsPage from './pages/ProductsPage';
 import SuppliersPage from './pages/SuppliersPage';
 import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
+import CreateInvoicePage from './pages/CreateInvoicePage';
 import './App.css';
 
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -72,6 +73,7 @@ function App() {
               <div className="ml-10 flex items-baseline space-x-4">
                 <NavLink to="/">Sản Phẩm</NavLink>
                 <NavLink to="/suppliers">Nhà Cung Cấp</NavLink>
+                <NavLink to="/create-invoice">Tạo Hóa Đơn</NavLink>
                 <NavLink to="/reports">Báo Cáo</NavLink>
               </div>
             </div>
@@ -101,6 +103,7 @@ function App() {
             <Routes>
               <Route path="/" element={<ProductsPage />} />
               <Route path="/suppliers" element={<SuppliersPage />} />
+              <Route path="/create-invoice" element={<CreateInvoicePage />} />
               <Route path="/reports" element={<ReportsPage />} />
             </Routes>
           </div>
