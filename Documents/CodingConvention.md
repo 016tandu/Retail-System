@@ -43,9 +43,16 @@ This ensures all schema changes are version-controlled and repeatable.
 
 ## 5. Development Workflow
 
-To ensure a structured and clear development process, the following workflow will be followed after each task:
+To ensure a structured, high-quality, and clear development process, the following workflow will be followed after each task:
 
 1.  **Task Completion:** Complete the user's requested task (e.g., implementing a feature, fixing a bug).
-2.  **Update Roadmap:** Open `Documents/TODO.md` and mark the just-completed task as done (e.g., change `[ ]` to `[x]`).
-3.  **Propose Next Step:** Suggest the next logical feature to implement from the `TODO.md` list.
-4.  **Await Approval:** Wait for the user's explicit approval before beginning work on the next task.
+2.  **Type Check & Build Verification:** Run `npm run build` in the `frontend` directory to ensure that there are no TypeScript errors and the project builds successfully.
+3.  **Update Roadmap:** Open `Documents/TODO.md` and mark the just-completed task as done (e.g., change `[ ]` to `[x]`).
+4.  **Propose Next Step:** Suggest the next logical feature to implement from the `TODO.md` list.
+5.  **Await Approval:** Wait for the user's explicit approval before beginning work on the next task.
+
+## 6. Coding Standards (Frontend)
+
+-   **TypeScript:** Always use TypeScript for frontend components. Avoid `any` type; define proper interfaces for data structures (e.g., `Product`, `Supplier`).
+-   **State Management:** Use React Hooks (`useState`, `useEffect`) for local state. Use the Supabase client for data fetching.
+-   **Styling:** Use Tailwind CSS for a consistent and modern look. Maintain a clean, professional, and accessible UI.
