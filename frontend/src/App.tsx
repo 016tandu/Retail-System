@@ -9,6 +9,7 @@ import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import CreateInvoicePage from './pages/CreateInvoicePage';
 import InventoryTransferPage from './pages/InventoryTransferPage';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -81,7 +82,8 @@ function App() {
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
-                <NavLink to="/">{t('nav.products')}</NavLink>
+                <NavLink to="/">{t('nav.dashboard')}</NavLink>
+                <NavLink to="/products">{t('nav.products')}</NavLink>
                 <NavLink to="/suppliers">{t('nav.suppliers')}</NavLink>
                 
                 {/* Role-Based Links */}
@@ -131,7 +133,8 @@ function App() {
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <Routes>
-              <Route path="/" element={<ProductsPage />} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/products" element={<ProductsPage />} />
               <Route path="/suppliers" element={<SuppliersPage />} />
               <Route path="/create-invoice" element={<CreateInvoicePage />} />
               <Route path="/inventory-transfer" element={<InventoryTransferPage />} />

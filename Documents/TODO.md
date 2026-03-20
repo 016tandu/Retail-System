@@ -39,27 +39,20 @@ This document outlines the roadmap for the TechStore application.
 
 ---
 
-## Phase 4: Advanced Features & QoL (In Progress)
+## Phase 4: Advanced Features & QoL (Completed)
 
 -   [x] **Feature: Advanced Profitability Report**
 -   [x] **Feature: Internationalization (i18n)** - Added VI/EN support and language switcher.
--   [ ] **Feature: Homepage Dashboard** - High-level metrics overview.
+-   [x] **Feature: Homepage Dashboard**
+    -   **Implementation Details:** Created `get_dashboard_metrics()` RPC and `Dashboard.tsx` with high-level metrics overview.
 
 ---
 
-## Phase 5: RBAC & Advanced Inventory Workflows (New)
+## Phase 5: RBAC & Advanced Inventory Workflows (Completed)
 
--   [ ] **Feature: Multi-Role Authentication UI**
-    -   **User Perspective:** "I want to select my role (Retailer, Provider, Admin) during registration so the system configures my permissions correctly."
-    -   **Developer Perspective:** Update `LoginPage.tsx` to include a role dropdown.
--   [ ] **Feature: Two-Step Inventory Transfer**
-    -   **Workflow:** 
-        1. **Provider** initiates a transfer to a Retailer branch.
-        2. **Retailer** receives a notification.
-        3. **Retailer** "Confirms" (stock moves) or "Declines" with a reason (Damaged, Wrong Product, etc.).
-    -   **Developer Perspective:** Create `STOCK_TRANSFER` and `NOTIFICATIONS` tables. Implement `initiate_transfer` and `respond_to_transfer` RPCs.
--   [ ] **Feature: Role-Based Access Control (RBAC)**
-    -   **Permissions:**
-        - **Admin:** Full access.
-        - **Provider:** Can manage Goods Receipts (`PHIEU_NHAP`) and initiate transfers.
-        - **Retailer:** Cannot create Goods Receipts. Can create Invoices (`HOA_DON`) and confirm transfers.
+-   [x] **Feature: Multi-Role Authentication UI**
+    -   **Implementation Details:** Updated `LoginPage.tsx` with Role and Warehouse dropdowns.
+-   [x] **Feature: Two-Step Inventory Transfer**
+    -   **Implementation Details:** Created `STOCK_TRANSFER` system with `initiate_transfer` and `respond_to_transfer` RPCs. Added `InventoryTransferPage.tsx`.
+-   [x] **Feature: Role-Based Access Control (RBAC)**
+    -   **Implementation Details:** Implemented navigation visibility and database policies based on `Admin`, `Provider`, and `Retailer` roles.

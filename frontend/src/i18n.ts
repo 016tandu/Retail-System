@@ -35,10 +35,20 @@ i18n
             employee_error: 'Không tìm thấy thông tin nhân viên',
           },
           nav: {
+            dashboard: 'Bảng Điều Khiển',
             products: 'Sản Phẩm',
             suppliers: 'Nhà Cung Cấp',
             create_invoice: 'Tạo Hóa Đơn',
             reports: 'Báo Cáo',
+          },
+          dashboard: {
+            title: 'Tổng Quan Hệ Thống',
+            today_revenue: 'Doanh thu hôm nay',
+            today_orders: 'Đơn hàng mới',
+            total_stock: 'Tổng tồn kho',
+            pending_transfers: 'Chuyển kho chờ xử lý',
+            top_products: 'Sản phẩm bán chạy nhất hôm nay',
+            no_sales_today: 'Chưa có dữ liệu bán hàng hôm nay.',
           },
           login: {
             title: 'Chào mừng trở lại',
@@ -128,10 +138,20 @@ i18n
             employee_error: 'Employee information not found',
           },
           nav: {
+            dashboard: 'Dashboard',
             products: 'Products',
             suppliers: 'Suppliers',
             create_invoice: 'Create Invoice',
             reports: 'Reports',
+          },
+          dashboard: {
+            title: 'System Overview',
+            today_revenue: "Today's Revenue",
+            today_orders: 'New Orders',
+            total_stock: 'Total Stock',
+            pending_transfers: 'Pending Transfers',
+            top_products: "Today's Top Sellers",
+            no_sales_today: 'No sales data for today.',
           },
           login: {
             title: 'Welcome Back',
