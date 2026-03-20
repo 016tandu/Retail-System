@@ -39,12 +39,16 @@ This document outlines the roadmap for the TechStore application.
 
 ---
 
-## Phase 4: Advanced Features & QoL
+## Phase 4: Advanced Features & QoL (In Progress)
 
--   [ ] **Feature: Advanced Profitability Report**
+-   [x] **Feature: Advanced Profitability Report**
     -   **User Perspective:** "I want a report that shows me the profit margin for each product sold within a specific date range."
     -   **Business Analyst Perspective:** "We need deeper insights into our sales performance beyond just revenue. This report will help us identify our most and least profitable products, allowing for better strategic decisions."
     -   **Developer Perspective:** "Create a new RPC function that joins `CT_HOA_DON` and `CT_PHIEU_NHAP` to calculate the profit for each item. Update the Reports page with a new UI to call this function and display the results."
+-   [x] **Implementation Details:**
+    -   Created `calculate_profitability(p_start_date, p_end_date)` RPC in migration `20260322000000_create_profitability_report_function.sql`.
+    -   Updated `ReportsPage.tsx` with new UI and logic to display profitability data.
+    -   Integrated with i18n for multi-language support.
 
 -   [ ] **Feature: Inventory Transfer**
     -   **User Perspective:** "As a warehouse manager, I need a simple way to record the transfer of stock from one warehouse to another."
