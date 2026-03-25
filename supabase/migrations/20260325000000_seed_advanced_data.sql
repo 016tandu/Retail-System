@@ -30,14 +30,12 @@ ON CONFLICT ("MaKho", "MaSP") DO UPDATE
 SET "SoLuongTon" = "public"."TON_KHO"."SoLuongTon" + EXCLUDED."SoLuongTon", "LastUpdated" = now();
 
 -- 4. Seed some sample Stock Transfers (STOCK_TRANSFER)
--- Note: sender_id and receiver_id would normally be UUIDs from auth.users.
--- Since we can't easily seed auth.users via SQL without side effects,
--- these records might not show up for a specific logged-in user until linked,
--- but they provide sample data for the "Admin" view or global lists.
-INSERT INTO "public"."STOCK_TRANSFER" ("ma_sp", "from_kho", "to_kho", "so_luong", "status", "created_at") VALUES
-('SP001', 'KHO_HCM', 'KHO_HN', 5, 'PENDING', now() - interval '1 hour'),
-('SP002', 'KHO_HCM', 'KHO_DN', 2, 'CONFIRMED', now() - interval '2 days'),
-('SP003', 'KHO_HN', 'KHO_HCM', 1, 'DECLINED', now() - interval '1 day');
+-- Note: sender_id and receiver_id are NULL here as auth.users cannot be directly seeded via SQL.
+-- These records will provide sample data for the "Admin" view or global lists.
+INSERT INTO "public"."STOCK_TRANSFER" ("ma_sp", "from_kho", "to_kho", "so_luong", "sender_id", "receiver_id", "status", "created_at") VALUES
+('SP001', 'KHO_HCM', 'KHO_HN', 5, NULL, NULL, 'PENDING', now() - interval '1 hour'),
+('SP002', 'KHO_HCM', 'KHO_DN', 2, NULL, NULL, 'CONFIRMED', now() - interval '2 days'),
+('SP003', 'KHO_HN', 'KHO_HCM', 1, NULL, NULL, 'DECLINED', now() - interval '1 day');
 
 -- Update the declined one with a reason
 UPDATE "public"."STOCK_TRANSFER" 

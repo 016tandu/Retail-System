@@ -56,3 +56,24 @@ This document outlines the roadmap for the TechStore application.
     -   **Implementation Details:** Created `STOCK_TRANSFER` system with `initiate_transfer` and `respond_to_transfer` RPCs. Added `InventoryTransferPage.tsx`.
 -   [x] **Feature: Role-Based Access Control (RBAC)**
     -   **Implementation Details:** Implemented navigation visibility and database policies based on `Admin`, `Provider`, and `Retailer` roles.
+
+
+
+
+
+____
+
+extra task: 
+
+
+ i just installed database image on docker and now you can run the npx supabase db to check the database itself (list the tables on
+   the public schema, then check the empty data, make sure that in the business sense as well as the data constraint sense they all
+   line up), then, add the data seeding, if there are any manual check or manual command run, let me know after fnishing the task.
+   finally, if everything is properly done (after manual check), write a document for business analyst to understand the role and
+   their feature, as well as updating the database/architecture specs files. then, check where we are at @TODO file. make sure to
+   follow @Documents/CodingConvention.md and supabasecli common practice as well. so far these tables are still not seeded with actual rows on production: KHO, NHA_CUNG_CAP, NHAN_VIEN, SanPham, SAN_PHAM (not sure why we have 2 san pham tables,  can you check that as well)
+
+
+finally we want cron jobs on supabase with sql scripts to regularly create random but smart invoices, employee shift (old and new employees, should brainstorm on how one invoice that has actors that used to be on the company but has resigned, decide how they should be handled, maybe show on UI that this is a resigned employee) and reports from different roles.
+
+UI should also have a hoverable rounded text box with opaque background z position at top to explain what the input does (maybe on an (i) info icon with miuted color to hover, or the hover text should show on the role itself to explain the role of the role)
