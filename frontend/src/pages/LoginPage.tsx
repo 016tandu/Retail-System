@@ -79,7 +79,21 @@ const LoginPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Chức vụ</label>
+                  <div className="flex items-center mb-1">
+                    <label className="block text-sm font-semibold text-gray-700">Chức vụ</label>
+                    <div className="group relative ml-2">
+                      <span className="cursor-help text-gray-400 bg-gray-100 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">i</span>
+                      <div className="invisible group-hover:visible absolute left-full ml-2 top-0 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 opacity-95 transition-all">
+                        <p className="font-bold mb-1 border-b border-gray-700 pb-1">Giải thích vai trò:</p>
+                        <ul className="space-y-1 mt-1">
+                          <li><b className="text-indigo-400">Admin:</b> Toàn quyền hệ thống.</li>
+                          <li><b className="text-indigo-400">Provider:</b> Nhập hàng từ nhà cung cấp, gửi hàng cho chi nhánh.</li>
+                          <li><b className="text-indigo-400">Retailer:</b> Bán hàng (Hóa đơn), nhận hàng từ kho tổng.</li>
+                          <li><b className="text-indigo-400">Staff:</b> Xem thông tin và báo cáo cơ bản.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}

@@ -28,22 +28,38 @@ const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) =>
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<{HoTen: string, role: string, TrangThai: string} | null>(null);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setLoading(false);
+      if (session) fetchProfile(session.user.id);
+      else setLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) fetchProfile(session.user.id);
+      else {
+        setProfile(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('NHAN_VIEN')
+      .select('HoTen, role, TrangThai')
+      .eq('user_id', userId)
+      .single();
+    
+    if (!error && data) setProfile(data);
+    setLoading(false);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -70,15 +86,16 @@ function App() {
     );
   }
 
-  const userRole = session.user.user_metadata?.role || 'Staff';
+  const userRole = profile?.role || 'Staff';
+  const isResigned = profile?.TrangThai === 'Resigned';
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
-      <nav className="bg-white shadow-md">
+      <nav className="bg-white shadow-md border-b-2 border-indigo-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold text-indigo-600">TechStore</Link>
+              <Link to="/" className="text-2xl font-bold text-indigo-600 tracking-tight">TechStore</Link>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
@@ -86,12 +103,11 @@ function App() {
                 <NavLink to="/products">{t('nav.products')}</NavLink>
                 <NavLink to="/suppliers">{t('nav.suppliers')}</NavLink>
                 
-                {/* Role-Based Links */}
-                {(userRole === 'Retailer' || userRole === 'Admin') && (
+                {(userRole === 'Retailer' || userRole === 'Admin') && !isResigned && (
                   <NavLink to="/create-invoice">{t('nav.create_invoice')}</NavLink>
                 )}
                 
-                {(userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && (
+                {(userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && !isResigned && (
                   <NavLink to="/inventory-transfer">Chuyển Kho</NavLink>
                 )}
 
@@ -101,26 +117,31 @@ function App() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={toggleLanguage}
-                className="px-2 py-1 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+                className="px-2 py-1 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 transition-colors bg-white shadow-sm"
               >
                 {i18n.language.toUpperCase()}
               </button>
               <div className="flex flex-col items-end">
                 <div className="flex items-center space-x-1">
+                  {isResigned && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-600 text-white animate-pulse">
+                      RESIGNED
+                    </span>
+                  )}
                   <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 uppercase">
                     {userRole}
                   </span>
                   <span className="text-sm font-bold text-gray-900">
-                    {session.user.user_metadata?.full_name || t('common.staff')}
+                    {profile?.HoTen || t('common.staff')}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 font-medium">
                   {session.user.email}
                 </span>
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-2 text-gray-500 hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all"
+                className="ml-2 text-gray-500 hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border border-transparent hover:border-red-700"
               >
                 {t('common.logout')}
               </button>
@@ -128,6 +149,14 @@ function App() {
           </div>
         </div>
       </nav>
+
+      {isResigned && (
+        <div className="bg-red-50 border-b border-red-200 p-2 text-center">
+          <p className="text-red-700 text-xs font-bold">
+            Tài khoản này thuộc về nhân viên đã nghỉ việc. Một số chức năng tạo dữ liệu đã bị khóa.
+          </p>
+        </div>
+      )}
 
       <main>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
