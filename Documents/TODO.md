@@ -91,3 +91,16 @@ ____
 -   [x] **Documentation:**
     -   Created `BusinessAnalystGuide.md`.
     -   Updated `Architecture.md` with new flows.
+
+
+
+
+## UI 
+
+- Password input: nên có nút show/hide (icon con mắc và con mắt bị gạch chéo)
+- Navigation bar: 
+    - Đối với report có dropdown cho từng loại report, mỗi lần vào report thì chỉ hiển thị loại report đó, hơn nữa: thêm nút export to pdf/xlsl, sử dụng thư viện bên ngoài nếu cần thiết, cần có nút preview và một số config nữa 
+    - đối với các cấp lớn hơn staff: cần có full CRUD cho các trang quản lý tồn kho, sản phẩm, hóa đơn 
+    - đối với trang admin quản lý manager: cần có nút giáng cấp, còn đối với manager: có thể thăng cấp nhân viên (thêm confirmation modal cho từng thao tác quan trọng như thế này)
+    -  navigation bar nên được chuyển qua bên phải dưới dạng có thể xổ ra hoặc đóng lại, nếu ở thiết bị nhỏ, thì nên thu nhỏ thành burger menu. 
+    - dark và light mode hiện tại không hoạt động được do chưa có preset color được định nghĩa sẵn sẵn bên trong index.css/main.css (tùy cách bạn viết css)
