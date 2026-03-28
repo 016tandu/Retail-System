@@ -15,11 +15,11 @@ import './App.css';
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
-  const activeClass = 'bg-gray-900 text-white';
-  const inactiveClass = 'text-gray-500 hover:bg-gray-700 hover:text-white';
+  const activeClass = 'bg-indigo-600 text-white shadow-sm';
+  const inactiveClass = 'text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600';
 
   return (
-    <Link to={to} className={`${isActive ? activeClass : inactiveClass} px-3 py-2 rounded-md text-sm font-medium transition-colors`}>
+    <Link to={to} className={`${isActive ? activeClass : inactiveClass} px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center`}>
       {children}
     </Link>
   );
@@ -29,7 +29,18 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{HoTen: string, role: string, TrangThai: string} | null>(null);
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,15 +83,15 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl font-medium">{t('common.loading')}</p>
+      <div className="flex items-center justify-center min-h-screen dark:bg-gray-900">
+        <p className="text-xl font-bold text-indigo-600 animate-pulse">{t('common.loading')}</p>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
         <LoginPage />
       </div>
     );
@@ -89,16 +100,26 @@ function App() {
   const userRole = profile?.role || 'Staff';
   const isResigned = profile?.TrangThai === 'Resigned';
 
+  const roleDescriptions: Record<string, string> = {
+    'Admin': 'Toàn quyền: Quản lý kho, nhân sự, xem toàn bộ báo cáo và thực hiện mọi giao dịch.',
+    'Provider': 'Cung ứng: Nhập hàng từ nhà cung cấp và điều phối chuyển kho đến các chi nhánh.',
+    'Retailer': 'Bán lẻ: Tạo hóa đơn cho khách hàng và nhận hàng điều chuyển từ kho tổng.',
+    'Staff': 'Nhân viên: Xem danh mục sản phẩm, tồn kho và các báo cáo cơ bản.'
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
-      <nav className="bg-white shadow-md border-b-2 border-indigo-500">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+      <nav className="bg-white dark:bg-gray-800 shadow-lg border-b border-indigo-100 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold text-indigo-600 tracking-tight">TechStore</Link>
+              <Link to="/" className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tighter">
+                TECH<span className="text-gray-900 dark:text-white">STORE</span>
+              </Link>
             </div>
+            
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
+              <div className="ml-10 flex items-baseline space-x-2">
                 <NavLink to="/">{t('nav.dashboard')}</NavLink>
                 <NavLink to="/products">{t('nav.products')}</NavLink>
                 <NavLink to="/suppliers">{t('nav.suppliers')}</NavLink>
@@ -114,36 +135,56 @@ function App() {
                 <NavLink to="/reports">{t('nav.reports')}</NavLink>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+
+            <div className="flex items-center space-x-3">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
+                title="Đổi giao diện"
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+
               <button
                 onClick={toggleLanguage}
-                className="px-2 py-1 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 transition-colors bg-white shadow-sm"
+                className="px-2 py-1 text-xs font-black border-2 border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 shadow-sm"
               >
                 {i18n.language.toUpperCase()}
               </button>
-              <div className="flex flex-col items-end">
-                <div className="flex items-center space-x-1">
+
+              <div className="flex flex-col items-end border-l pl-3 border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-2">
                   {isResigned && (
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-600 text-white animate-pulse">
                       RESIGNED
                     </span>
                   )}
-                  <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 uppercase">
-                    {userRole}
-                  </span>
-                  <span className="text-sm font-bold text-gray-900">
+                  {/* Role with Hover Explanation */}
+                  <div className="group relative">
+                    <span className="text-[10px] cursor-help font-black px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 uppercase tracking-widest border border-indigo-200 dark:border-indigo-800">
+                      {userRole}
+                    </span>
+                    <div className="invisible group-hover:visible absolute right-0 mt-2 w-64 p-3 bg-gray-900 dark:bg-gray-950 text-white text-xs rounded-xl shadow-2xl z-50 border border-gray-700 opacity-95">
+                       <p className="font-bold text-indigo-400 mb-1 border-b border-gray-800 pb-1 italic">Quyền hạn {userRole}:</p>
+                       <p className="leading-relaxed text-gray-300">{roleDescriptions[userRole]}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
                     {profile?.HoTen || t('common.staff')}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
                   {session.user.email}
                 </span>
               </div>
+
               <button
                 onClick={handleLogout}
-                className="ml-2 text-gray-500 hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border border-transparent hover:border-red-700"
+                className="ml-2 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-2 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200 border border-red-100 dark:border-red-900/50"
+                title={t('common.logout')}
               >
-                {t('common.logout')}
+                🚪
               </button>
             </div>
           </div>
@@ -151,26 +192,20 @@ function App() {
       </nav>
 
       {isResigned && (
-        <div className="bg-red-50 border-b border-red-200 p-2 text-center">
-          <p className="text-red-700 text-xs font-bold">
-            Tài khoản này thuộc về nhân viên đã nghỉ việc. Một số chức năng tạo dữ liệu đã bị khóa.
-          </p>
+        <div className="bg-red-600 text-white p-1 text-center text-[10px] font-black uppercase tracking-[0.2em]">
+          Tài khoản đã nghỉ việc - Chức năng giao dịch bị khóa
         </div>
       )}
 
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/suppliers" element={<SuppliersPage />} />
-              <Route path="/create-invoice" element={<CreateInvoicePage />} />
-              <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-            </Routes>
-          </div>
-        </div>
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/suppliers" element={<SuppliersPage />} />
+          <Route path="/create-invoice" element={<CreateInvoicePage />} />
+          <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Routes>
       </main>
     </div>
   );
