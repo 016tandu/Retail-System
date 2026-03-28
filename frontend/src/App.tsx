@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard';
 import MyProfilePage from './pages/MyProfilePage';
 import ManagementPage from './pages/ManagementPage';
 import WarehouseSettingsPage from './pages/WarehouseSettingsPage';
+import SitePermissionsPage from './pages/SitePermissionsPage';
 import './App.css';
 
 const SidebarLink = ({ to, icon, children, collapsed }: { to: string, icon: string, children: React.ReactNode, collapsed: boolean }) => {
@@ -117,8 +118,8 @@ function App() {
   const roleDescriptions: Record<string, string> = {
     'Admin': 'Toàn quyền: Quản lý kho, nhân sự cấp trung, xem toàn bộ báo cáo và thực hiện mọi giao dịch.',
     'Provider': 'Cung ứng: Quản lý thông tin Kho, nhập hàng từ NCC và điều phối chuyển kho.',
-    'Retailer': 'Bán lẻ: Quản lý nhân viên chi nhánh, tạo hóa đơn và nhận hàng điều chuyển.',
-    'Staff': 'Nhân viên: Xem danh mục sản phẩm, tồn kho và các báo cáo cơ bản.'
+    'Retailer': 'Bán lẻ: Quản lý nhân viên chi nhánh, nhận hàng điều chuyển. KHÔNG được tạo hóa đơn trực tiếp.',
+    'Staff': 'Nhân viên: Bán hàng, tạo hóa đơn, xem tồn kho và các báo cáo cơ bản.'
   };
 
   return (
@@ -141,10 +142,14 @@ function App() {
 
         <div className="flex-1 px-4 py-6 overflow-y-auto overflow-x-hidden scrollbar-hide">
           <SidebarLink to="/" icon="fas fa-chart-line" collapsed={sidebarCollapsed}>{t('nav.dashboard')}</SidebarLink>
+          
+          <div className="my-2 border-t border-gray-100 dark:border-slate-900 opacity-50"></div>
+          
+          <SidebarLink to="/profile" icon="fas fa-user-circle" collapsed={sidebarCollapsed}>Hồ Sơ Của Tôi</SidebarLink>
           <SidebarLink to="/products" icon="fas fa-boxes" collapsed={sidebarCollapsed}>{t('nav.products')}</SidebarLink>
           <SidebarLink to="/suppliers" icon="fas fa-truck-field" collapsed={sidebarCollapsed}>{t('nav.suppliers')}</SidebarLink>
           
-          {(userRole === 'Retailer' || userRole === 'Admin') && !isResigned && (
+          {(userRole === 'Staff' || userRole === 'Admin') && !isResigned && (
             <SidebarLink to="/create-invoice" icon="fas fa-file-invoice-dollar" collapsed={sidebarCollapsed}>{t('nav.create_invoice')}</SidebarLink>
           )}
           
@@ -163,6 +168,10 @@ function App() {
           {(userRole === 'Admin' || userRole === 'Provider') && !isResigned && (
             <SidebarLink to="/warehouse-settings" icon="fas fa-cogs" collapsed={sidebarCollapsed}>Cấu Hình Kho</SidebarLink>
           )}
+
+          {userRole === 'Admin' && !isResigned && (
+            <SidebarLink to="/site-permissions" icon="fas fa-shield-halved" collapsed={sidebarCollapsed}>Phân Quyền Site</SidebarLink>
+          )}
         </div>
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-900">
@@ -176,32 +185,7 @@ function App() {
         </div>
       </aside>
 
-      {/* Mobile Top Nav & Burger */}
-      <nav className="xl:hidden fixed top-0 left-0 w-full h-16 bg-white dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800 z-50 px-4 flex items-center justify-between shadow-md">
-        <Link to="/" className="text-xl font-black text-indigo-600 tracking-tighter italic">TECHSTORE</Link>
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-900"
-        >
-          <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'} text-gray-600 dark:text-white`}></i>
-        </button>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden fixed inset-0 bg-white dark:bg-slate-950 z-[49] pt-20 px-6 animate-in slide-in-from-right duration-300">
-           {/* Mobile links go here */}
-           <div className="flex flex-col space-y-4" onClick={() => setMobileMenuOpen(false)}>
-              <Link to="/" className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-900 font-black uppercase text-xs tracking-widest text-center">{t('nav.dashboard')}</Link>
-              <Link to="/products" className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-900 font-black uppercase text-xs tracking-widest text-center">{t('nav.products')}</Link>
-              <button onClick={handleLogout} className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 text-red-600 font-black uppercase text-xs tracking-widest">Đăng xuất</button>
-           </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
       <main className={`flex-1 min-h-screen transition-all duration-500 flex flex-col ${sidebarCollapsed ? 'xl:mr-20' : 'xl:mr-72'} pt-16 xl:pt-0`}>
-        {/* Top Header Section inside Main */}
         <header className="h-20 px-8 flex items-center justify-between bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl border-b border-gray-100 dark:border-slate-900 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center space-x-4">
             <button
@@ -221,10 +205,11 @@ function App() {
           <div className="flex items-center space-x-4">
             <div className="flex flex-col items-end mr-2">
               <div className="flex items-center space-x-2">
-                {isResigned && <span className="px-1.5 py-0.5 bg-red-600 text-[8px] text-white font-black rounded uppercase animate-pulse">Resigned</span>}
+                {isResigned && <span className="px-1.5 py-0.5 bg-red-600 text-[8px] text-white font-black rounded uppercase animate-pulse tracking-tighter">Resigned</span>}
                 <div className="group relative">
-                  <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[9px] font-black rounded-md uppercase tracking-tighter border border-indigo-200 dark:border-indigo-800 cursor-help">
+                  <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[9px] font-black rounded-md uppercase tracking-tighter border border-indigo-200 dark:border-indigo-800 cursor-help flex items-center">
                     {userRole}
+                    <i className="fas fa-circle-info ml-1 opacity-50"></i>
                   </span>
                   <div className="invisible group-hover:visible absolute right-0 mt-2 w-64 p-4 bg-slate-950 text-white text-[10px] rounded-2xl shadow-2xl z-50 border border-slate-800 opacity-98 backdrop-blur-md">
                     <p className="font-black text-indigo-400 mb-2 border-b border-slate-800 pb-2 flex items-center uppercase italic">
@@ -237,19 +222,13 @@ function App() {
                   {profile?.HoTen || t('common.staff')}
                 </Link>
               </div>
-              <span className="text-[10px] text-gray-400 font-mono">{session.user.email}</span>
+              <span className="text-[10px] text-gray-400 font-mono font-bold tracking-tighter">{session.user.email}</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+            <Link to="/profile" className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none hover:rotate-6 transition-transform">
               <i className="fas fa-user-ninja"></i>
-            </div>
+            </Link>
           </div>
         </header>
-
-        {isResigned && (
-          <div className="bg-red-600 text-white py-1.5 text-center text-[10px] font-black uppercase tracking-[0.3em] shadow-inner">
-            Tài khoản đã nghỉ việc - Giao dịch bị khóa
-          </div>
-        )}
 
         <section className="p-8 flex-1">
           <Routes>
@@ -262,6 +241,7 @@ function App() {
             <Route path="/profile" element={<MyProfilePage />} />
             <Route path="/management" element={<ManagementPage />} />
             <Route path="/warehouse-settings" element={<WarehouseSettingsPage />} />
+            <Route path="/site-permissions" element={<SitePermissionsPage />} />
           </Routes>
         </section>
       </main>
