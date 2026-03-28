@@ -8,7 +8,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState('Staff');
-  const [maKho, setMaKho] = useState('K01');
+  const [maKho, setMaKho] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +17,13 @@ const LoginPage = () => {
 
   useEffect(() => {
     const fetchWarehouses = async () => {
-      const { data } = await supabase.from('KHO').select('MaKho, TenKho');
-      if (data) setWarehouses(data);
+      const { data, error: fetchError } = await supabase.from('KHO').select('MaKho, TenKho');
+      if (fetchError) {
+        console.error('Error fetching warehouses:', fetchError);
+      } else if (data && data.length > 0) {
+        setWarehouses(data);
+        setMaKho(data[0].MaKho); // Tự động chọn kho đầu tiên
+      }
     };
     fetchWarehouses();
   }, []);
