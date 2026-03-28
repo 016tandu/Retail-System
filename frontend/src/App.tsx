@@ -10,6 +10,9 @@ import LoginPage from './pages/LoginPage';
 import CreateInvoicePage from './pages/CreateInvoicePage';
 import InventoryTransferPage from './pages/InventoryTransferPage';
 import Dashboard from './pages/Dashboard';
+import MyProfilePage from './pages/MyProfilePage';
+import ManagementPage from './pages/ManagementPage';
+import WarehouseSettingsPage from './pages/WarehouseSettingsPage';
 import './App.css';
 
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -62,7 +65,6 @@ function App() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    // Sửa lỗi 406 bằng cách dùng maybeSingle()
     const { data, error } = await supabase
       .from('NHAN_VIEN')
       .select('HoTen, role, TrangThai')
@@ -105,16 +107,16 @@ function App() {
   const isResigned = profile?.TrangThai === 'Resigned';
 
   const roleDescriptions: Record<string, string> = {
-    'Admin': 'Toàn quyền: Quản lý kho, nhân sự, xem toàn bộ báo cáo và thực hiện mọi giao dịch.',
-    'Provider': 'Cung ứng: Nhập hàng từ nhà cung cấp và điều phối chuyển kho đến các chi nhánh.',
-    'Retailer': 'Bán lẻ: Tạo hóa đơn cho khách hàng và nhận hàng điều chuyển từ kho tổng.',
+    'Admin': 'Toàn quyền: Quản lý kho, nhân sự cấp trung, xem toàn bộ báo cáo và thực hiện mọi giao dịch.',
+    'Provider': 'Cung ứng: Quản lý thông tin Kho, nhập hàng từ NCC và điều phối chuyển kho.',
+    'Retailer': 'Bán lẻ: Quản lý nhân viên chi nhánh, tạo hóa đơn và nhận hàng điều chuyển.',
     'Staff': 'Nhân viên: Xem danh mục sản phẩm, tồn kho và các báo cáo cơ bản.'
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200 font-sans transition-colors duration-500">
       <nav className="bg-white dark:bg-slate-950 shadow-2xl border-b border-indigo-100 dark:border-slate-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-3xl font-black text-indigo-600 dark:text-indigo-500 tracking-tighter hover:scale-105 transition-transform">
@@ -122,7 +124,7 @@ function App() {
               </Link>
             </div>
             
-            <div className="hidden md:block">
+            <div className="hidden xl:block">
               <div className="ml-10 flex items-baseline space-x-1">
                 <NavLink to="/"><i className="fas fa-chart-line mr-2"></i>{t('nav.dashboard')}</NavLink>
                 <NavLink to="/products"><i className="fas fa-boxes mr-2"></i>{t('nav.products')}</NavLink>
@@ -137,10 +139,19 @@ function App() {
                 )}
 
                 <NavLink to="/reports"><i className="fas fa-file-contract mr-2"></i>{t('nav.reports')}</NavLink>
+
+                {/* New Role-Based Management Links */}
+                {(userRole === 'Admin' || userRole === 'Retailer') && !isResigned && (
+                  <NavLink to="/management"><i className="fas fa-users-cog mr-2"></i>Quản Lý</NavLink>
+                )}
+
+                {(userRole === 'Admin' || userRole === 'Provider') && !isResigned && (
+                  <NavLink to="/warehouse-settings"><i className="fas fa-cogs mr-2"></i>Cấu Hình Kho</NavLink>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-yellow-400 hover:rotate-12 transition-all border border-transparent hover:border-indigo-500"
@@ -155,7 +166,7 @@ function App() {
                 {i18n.language.toUpperCase()}
               </button>
 
-              <div className="flex flex-col items-end border-l-2 pl-4 border-gray-100 dark:border-slate-800">
+              <div className="flex flex-col items-end border-l-2 pl-4 border-gray-100 dark:border-slate-800 ml-2">
                 <div className="flex items-center space-x-3">
                   {isResigned && (
                     <span className="text-[10px] font-black px-2 py-0.5 rounded bg-red-600 text-white animate-pulse shadow-lg shadow-red-500/50">
@@ -173,9 +184,9 @@ function App() {
                        <p className="leading-relaxed text-gray-300 font-medium">{roleDescriptions[userRole]}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                  <Link to="/profile" className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     {profile?.HoTen || t('common.staff')}
-                  </span>
+                  </Link>
                 </div>
                 <span className="text-[10px] text-gray-500 dark:text-slate-500 font-mono font-bold">
                   {session.user.email}
@@ -184,7 +195,7 @@ function App() {
 
               <button
                 onClick={handleLogout}
-                className="w-10 h-10 flex items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 border border-red-100 dark:border-red-900/30 group"
+                className="ml-2 w-10 h-10 flex items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 border border-red-100 dark:border-red-900/30 group"
               >
                 <i className="fas fa-power-off group-hover:scale-110"></i>
               </button>
@@ -199,7 +210,7 @@ function App() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-[1600px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -207,6 +218,9 @@ function App() {
           <Route path="/create-invoice" element={<CreateInvoicePage />} />
           <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/profile" element={<MyProfilePage />} />
+          <Route path="/management" element={<ManagementPage />} />
+          <Route path="/warehouse-settings" element={<WarehouseSettingsPage />} />
         </Routes>
       </main>
     </div>

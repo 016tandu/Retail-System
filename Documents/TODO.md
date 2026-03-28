@@ -51,11 +51,24 @@ This document outlines the roadmap for the TechStore application.
 ## Phase 5: RBAC & Advanced Inventory Workflows (Completed)
 
 -   [x] **Feature: Multi-Role Authentication UI**
-    -   **Implementation Details:** Updated `LoginPage.tsx` with Role and Warehouse dropdowns.
 -   [x] **Feature: Two-Step Inventory Transfer**
-    -   **Implementation Details:** Created `STOCK_TRANSFER` system with `initiate_transfer` and `respond_to_transfer` RPCs. Added `InventoryTransferPage.tsx`.
 -   [x] **Feature: Role-Based Access Control (RBAC)**
-    -   **Implementation Details:** Implemented navigation visibility and database policies based on `Admin`, `Provider`, and `Retailer` roles.
+
+---
+
+## Phase 6: Identity & Management Hierarchy (New)
+
+-   [ ] **Feature: My Profile Management**
+    -   **User Perspective:** "I want to view and update my personal information (Full Name, Date of Birth)."
+    -   **Developer Perspective:** Create `MyProfilePage.tsx` using `update_my_profile` RPC.
+-   [ ] **Feature: Waterfall Management Model**
+    -   **Workflow:** 
+        - **Admin:** Manages `Provider` and `Retailer`. Cannot directly edit `Staff`.
+        - **Retailer:** Manages `Staff` within their own warehouse.
+    -   **Developer Perspective:** Implement `manage_employee` RPC with hierarchy checks. Create `EmployeeManagementPage.tsx`.
+-   [ ] **Feature: Warehouse Administration (Provider)**
+    -   **User Perspective:** "As a Provider, I want to edit warehouse details like names and locations."
+    -   **Developer Perspective:** Create `WarehouseSettingsPage.tsx` using `update_warehouse_info` RPC.
 
 
 
