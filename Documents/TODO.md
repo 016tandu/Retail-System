@@ -99,8 +99,10 @@ ____
 
 - Password input: nên có nút show/hide (icon con mắc và con mắt bị gạch chéo)
 - Navigation bar: 
-    - Đối với report có dropdown cho từng loại report, mỗi lần vào report thì chỉ hiển thị loại report đó, hơn nữa: thêm nút export to pdf/xlsl, sử dụng thư viện bên ngoài nếu cần thiết, cần có nút preview và một số config nữa 
+    - Đối với report có dropdown cho từng loại report, mỗi lần vào report thì chỉ hiển thị loại report đó, hơn nữa: thêm nút export to pdf/xlsl, sử dụng thư viện bên ngoài nếu cần thiết, cần có nút preview và một số config nữa, hiện tại vẫn chưa fetch tất cả sản phẩm khả dĩ để hiển thị dropdown và smart search (hiển thị vừa có mã sản phẩm, vừa có tên tương ứng để fuzzy search)
     - đối với các cấp lớn hơn staff: cần có full CRUD cho các trang quản lý tồn kho, sản phẩm, hóa đơn 
     - đối với trang admin quản lý manager: cần có nút giáng cấp, còn đối với manager: có thể thăng cấp nhân viên (thêm confirmation modal cho từng thao tác quan trọng như thế này)
     -  navigation bar nên được chuyển qua bên phải dưới dạng có thể xổ ra hoặc đóng lại, nếu ở thiết bị nhỏ, thì nên thu nhỏ thành burger menu. 
-    - dark và light mode hiện tại không hoạt động được do chưa có preset color được định nghĩa sẵn sẵn bên trong index.css/main.css (tùy cách bạn viết css)
+    - dark và light mode hiện tại không hoạt động được do chưa có preset color được định nghĩa sẵn sẵn bên trong index.css/main.css (tùy cách bạn viết css), và kể cả khi đã xử lý được preset color rồi, thì màu sắc hắc ám chỉ được sửa ở phần bên ngoài giao diện, mà giao diện của các component bên trong vẫn chưa được thay đổi. 
+    - hiện tại ở danh sách các function có sẵn trong supabase đã có function để thường xuyên tự động tạo smart invoice và phiếu vận chuyển, tuy nhiên function vẫn khong thể thường xuyên chạy (thậm chí vẫn chưa check tính khả dụng của function thông qua script check). cần tạo cron job trên supabase để script chạy thường xuyên, mỗi ngày cần có ít nhất 5 hóa đơn mỗi chi nhánh retailer từ những nhân viên đang active, mỗi info 
+    -

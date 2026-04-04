@@ -60,3 +60,91 @@ To ensure a structured, high-quality, and clear development process, the followi
     - Always check `session.user.user_metadata.role` before rendering sensitive UI elements.
     - Implement a centralized `useRole` hook or context if complex permissions are needed.
 -   **Workflows:** Multi-step processes (like Inventory Transfer) must use database triggers or RPCs to ensure atomicity and data integrity.
+
+## 7. Team Sync Workflow (2 Machines + Shared Production DB)
+
+This section is mandatory when 2 users work in parallel on the same codebase and the same production Supabase database.
+
+### 7.1 Golden Rules
+
+1. Do not change production schema directly in Supabase SQL Editor unless it is an emergency fix.
+2. Every schema change must exist as a migration file in `supabase/migrations`.
+3. For each feature, commit application code and migration files together in the same commit/PR.
+4. Do not run `npx supabase db push` at the same time on 2 machines.
+5. Before any new work, always pull latest source first.
+
+### 7.2 Pull Flow (Before Starting Any Feature)
+
+```bash
+git checkout main
+git pull origin main
+npx supabase migration list
+```
+
+If you use local Supabase for development/testing, also run:
+
+```bash
+npx supabase db reset
+```
+
+This applies all migrations locally and keeps local schema consistent with repo history.
+
+### 7.3 Push Flow (After Finishing One Feature/Commit)
+
+1. If schema changed, create a migration:
+
+```bash
+npx supabase migration new <feature_name>
+```
+
+2. Implement SQL in that migration file.
+3. Run build verification:
+
+```bash
+cd frontend
+npm run build
+cd ..
+```
+
+4. Commit and push source code + migrations together:
+
+```bash
+git add .
+git commit -m "feat: <short_feature_name>"
+git push origin <your_branch_or_main>
+```
+
+5. Sync again before pushing DB changes to production:
+
+```bash
+git checkout main
+git pull origin main
+npx supabase db push
+```
+
+6. Notify teammate to pull immediately after this step.
+
+### 7.4 Pull Flow (After Teammate Pushed)
+
+```bash
+git checkout main
+git pull origin main
+npx supabase migration list
+```
+
+If local Supabase is being used:
+
+```bash
+npx supabase db reset
+```
+
+### 7.5 Recovery Cases
+
+1. If `npx supabase db push` fails because of migration mismatch:
+   - Stop current push.
+   - Run `git pull origin main`.
+   - Re-run `npx supabase db push`.
+2. If production schema was changed manually (outside migrations):
+   - Run `npx supabase db pull`.
+   - Commit generated migration with message `chore: sync remote schema`.
+   - Push so all machines can pull and stay consistent.

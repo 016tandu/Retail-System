@@ -19,9 +19,8 @@ export default function MyProfilePage() {
   const [superiors, setSuperiors] = useState<Superior[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Calculate max date for 18 years old
   const today = new Date();
   const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().split('T')[0];
 
@@ -30,14 +29,36 @@ export default function MyProfilePage() {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setProfile(null);
+      setSuperiors([]);
+      setLoading(false);
+      return;
+    }
 
-    const { data: profData } = await supabase.from('NHAN_VIEN').select('*').eq('user_id', user.id).single();
-    if (profData) setProfile(profData);
+    const { data: profData, error: profError } = await supabase
+      .from('NHAN_VIEN')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-    const { data: supData } = await supabase.rpc('get_nearest_superiors', { p_user_id: user.id });
-    setSuperiors(supData || []);
+    if (profError) {
+      setMessage({ type: 'error', text: profError.message });
+      setProfile(null);
+    } else {
+      setProfile(profData ?? null);
+    }
+
+    const { data: supData, error: supError } = await supabase.rpc('get_nearest_superiors', { p_user_id: user.id });
+    if (supError) {
+      setSuperiors([]);
+      setMessage((prev) => prev ?? { type: 'error', text: supError.message });
+    } else {
+      setSuperiors(supData || []);
+    }
 
     setLoading(false);
   };
@@ -56,16 +77,26 @@ export default function MyProfilePage() {
 
     const { error } = await supabase.rpc('update_my_profile', {
       p_ho_ten: profile.HoTen,
-      p_ngay_sinh: profile.NgaySinh
+      p_ngay_sinh: profile.NgaySinh,
     });
 
     if (error) setMessage({ type: 'error', text: error.message });
     else setMessage({ type: 'success', text: 'Cập nhật hồ sơ thành công!' });
+
     setUpdating(false);
   };
 
-  if (loading) return <div className="text-center py-10 dark:text-gray-400 italic">{t('common.loading')}</div>;
-  if (!profile) return <div className="text-center py-10 text-red-500 font-black uppercase">Hồ sơ không tồn tại</div>;
+  if (loading) {
+    return <div className="text-center py-10 dark:text-gray-400 italic">{t('common.loading')}</div>;
+  }
+
+  if (!profile) {
+    return (
+      <div className="text-center py-10 text-red-500 font-black uppercase">
+        Hồ sơ không tồn tại hoặc chưa được đồng bộ. Vui lòng liên hệ admin.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
@@ -97,21 +128,21 @@ export default function MyProfilePage() {
 
           <div>
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Họ và Tên</label>
-            <input 
-              type="text" 
-              value={profile.HoTen} 
-              onChange={e => setProfile({...profile, HoTen: e.target.value})}
+            <input
+              type="text"
+              value={profile.HoTen}
+              onChange={(e) => setProfile({ ...profile, HoTen: e.target.value })}
               className="w-full px-5 py-3.5 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-indigo-500 rounded-xl outline-none dark:text-white font-black transition-all"
             />
           </div>
 
           <div>
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Ngày Sinh (Min 18+)</label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               max={maxDate}
-              value={profile.NgaySinh} 
-              onChange={e => setProfile({...profile, NgaySinh: e.target.value})}
+              value={profile.NgaySinh}
+              onChange={(e) => setProfile({ ...profile, NgaySinh: e.target.value })}
               className="w-full px-5 py-3.5 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-indigo-500 rounded-xl outline-none dark:text-white font-black transition-all"
             />
           </div>

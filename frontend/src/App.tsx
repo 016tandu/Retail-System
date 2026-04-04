@@ -112,7 +112,13 @@ function App() {
     );
   }
 
-  const userRole = profile?.role || 'Staff';
+  const metadataRole = typeof session.user.user_metadata?.role === 'string'
+    ? session.user.user_metadata.role
+    : undefined;
+  const metadataName = typeof session.user.user_metadata?.full_name === 'string'
+    ? session.user.user_metadata.full_name
+    : undefined;
+  const userRole = profile?.role || metadataRole || 'Staff';
   const isResigned = profile?.TrangThai === 'Resigned';
 
   const roleDescriptions: Record<string, string> = {
@@ -219,7 +225,7 @@ function App() {
                   </div>
                 </div>
                 <Link to="/profile" className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight hover:text-indigo-600 transition-colors">
-                  {profile?.HoTen || t('common.staff')}
+                  {profile?.HoTen || metadataName || t('common.staff')}
                 </Link>
               </div>
               <span className="text-[10px] text-gray-400 font-mono font-bold tracking-tighter">{session.user.email}</span>
