@@ -16,14 +16,30 @@ import WarehouseSettingsPage from './pages/WarehouseSettingsPage';
 import SitePermissionsPage from './pages/SitePermissionsPage';
 import './App.css';
 
-const SidebarLink = ({ to, icon, children, collapsed }: { to: string, icon: string, children: React.ReactNode, collapsed: boolean }) => {
+const SidebarLink = ({
+  to,
+  icon,
+  children,
+  collapsed,
+  onClick,
+}: {
+  to: string;
+  icon: string;
+  children: React.ReactNode;
+  collapsed: boolean;
+  onClick?: () => void;
+}) => {
   const location = useLocation();
   const isActive = location.pathname === to;
   const activeClass = 'bg-indigo-600 text-white shadow-lg translate-x-[-4px]';
   const inactiveClass = 'text-slate-400 hover:bg-slate-800 hover:text-indigo-400';
 
   return (
-    <Link to={to} className={`${isActive ? activeClass : inactiveClass} group flex items-center px-4 py-3.5 mb-2 rounded-2xl transition-all duration-300 relative overflow-hidden`}>
+    <Link
+      to={to}
+      onClick={onClick}
+      className={`${isActive ? activeClass : inactiveClass} group flex items-center px-4 py-3.5 mb-2 rounded-2xl transition-all duration-300 relative overflow-hidden`}
+    >
       <i className={`${icon} w-6 text-center text-lg ${isActive ? 'text-white' : 'group-hover:scale-110'} transition-transform`}></i>
       {!collapsed && <span className="ml-4 font-black text-[11px] uppercase tracking-widest whitespace-nowrap">{children}</span>}
       {collapsed && (
@@ -38,7 +54,7 @@ const SidebarLink = ({ to, icon, children, collapsed }: { to: string, icon: stri
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<{HoTen: string, role: string, TrangThai: string} | null>(null);
+  const [profile, setProfile] = useState<{ HoTen: string; role: string; TrangThai: string } | null>(null);
   const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,9 +77,9 @@ function App() {
       else setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) fetchProfile(session.user.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession) fetchProfile(nextSession.user.id);
       else {
         setProfile(null);
         setLoading(false);
@@ -74,17 +90,18 @@ function App() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('NHAN_VIEN')
       .select('HoTen, role, TrangThai')
       .eq('user_id', userId)
       .maybeSingle();
-    
-    if (!error && data) setProfile(data);
+
+    setProfile(data || null);
     setLoading(false);
   };
 
   const handleLogout = async () => {
+    setMobileMenuOpen(false);
     await supabase.auth.signOut();
   };
 
@@ -118,19 +135,68 @@ function App() {
   const metadataName = typeof session.user.user_metadata?.full_name === 'string'
     ? session.user.user_metadata.full_name
     : undefined;
+
   const userRole = profile?.role || metadataRole || 'Staff';
   const isResigned = profile?.TrangThai === 'Resigned';
 
+  const canCreateInvoice = (userRole === 'Staff' || userRole === 'Admin') && !isResigned;
+  const canTransfer = (userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && !isResigned;
+  const canManagement = (userRole === 'Admin' || userRole === 'Retailer') && !isResigned;
+  const canWarehouseSettings = (userRole === 'Admin' || userRole === 'Provider') && !isResigned;
+  const canSitePermissions = userRole === 'Admin' && !isResigned;
+
   const roleDescriptions: Record<string, string> = {
-    'Admin': 'Toàn quyền: Quản lý kho, nhân sự cấp trung, xem toàn bộ báo cáo và thực hiện mọi giao dịch.',
-    'Provider': 'Cung ứng: Quản lý thông tin Kho, nhập hàng từ NCC và điều phối chuyển kho.',
-    'Retailer': 'Bán lẻ: Quản lý nhân viên chi nhánh, nhận hàng điều chuyển. KHÔNG được tạo hóa đơn trực tiếp.',
-    'Staff': 'Nhân viên: Bán hàng, tạo hóa đơn, xem tồn kho và các báo cáo cơ bản.'
+    Admin: 'Toan quyen quan ly he thong.',
+    Provider: 'Quan ly kho va dieu phoi hang hoa.',
+    Retailer: 'Quan ly nhan su staff tai chi nhanh.',
+    Staff: 'Van hanh nghiep vu ban hang hieu chuan.',
   };
+
+  const renderNavLinks = (collapsed: boolean, onNavigate?: () => void) => (
+    <>
+      <SidebarLink to="/" icon="fas fa-chart-line" collapsed={collapsed} onClick={onNavigate}>{t('nav.dashboard')}</SidebarLink>
+      <div className="my-2 border-t border-gray-100 dark:border-slate-900 opacity-50"></div>
+      <SidebarLink to="/profile" icon="fas fa-user-circle" collapsed={collapsed} onClick={onNavigate}>Ho So Cua Toi</SidebarLink>
+      <SidebarLink to="/products" icon="fas fa-boxes" collapsed={collapsed} onClick={onNavigate}>{t('nav.products')}</SidebarLink>
+      <SidebarLink to="/suppliers" icon="fas fa-truck-field" collapsed={collapsed} onClick={onNavigate}>{t('nav.suppliers')}</SidebarLink>
+
+      {canCreateInvoice && (
+        <SidebarLink to="/create-invoice" icon="fas fa-file-invoice-dollar" collapsed={collapsed} onClick={onNavigate}>
+          {t('nav.create_invoice')}
+        </SidebarLink>
+      )}
+
+      {canTransfer && (
+        <SidebarLink to="/inventory-transfer" icon="fas fa-right-left" collapsed={collapsed} onClick={onNavigate}>
+          Chuyen Kho
+        </SidebarLink>
+      )}
+
+      <SidebarLink to="/reports" icon="fas fa-file-contract" collapsed={collapsed} onClick={onNavigate}>{t('nav.reports')}</SidebarLink>
+      <div className="my-6 border-t border-gray-100 dark:border-slate-900"></div>
+
+      {canManagement && (
+        <SidebarLink to="/management" icon="fas fa-users-cog" collapsed={collapsed} onClick={onNavigate}>
+          Quan Ly
+        </SidebarLink>
+      )}
+
+      {canWarehouseSettings && (
+        <SidebarLink to="/warehouse-settings" icon="fas fa-cogs" collapsed={collapsed} onClick={onNavigate}>
+          Cau Hinh Kho
+        </SidebarLink>
+      )}
+
+      {canSitePermissions && (
+        <SidebarLink to="/site-permissions" icon="fas fa-shield-halved" collapsed={collapsed} onClick={onNavigate}>
+          Phan Quyen Site
+        </SidebarLink>
+      )}
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200 font-sans transition-colors duration-500 flex flex-row-reverse overflow-x-hidden">
-      {/* Sidebar (Right-side) */}
       <aside className={`fixed right-0 h-full bg-white dark:bg-slate-950 border-l border-indigo-100 dark:border-slate-800 transition-all duration-500 z-40 hidden xl:flex flex-col shadow-2xl ${sidebarCollapsed ? 'w-20' : 'w-72'}`}>
         <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-slate-900">
           {!sidebarCollapsed && (
@@ -138,7 +204,7 @@ function App() {
               Tech<span className="text-gray-900 dark:text-white">Store</span>
             </Link>
           )}
-          <button 
+          <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-900 text-gray-400 hover:text-indigo-500 transition-colors"
           >
@@ -147,53 +213,64 @@ function App() {
         </div>
 
         <div className="flex-1 px-4 py-6 overflow-y-auto overflow-x-hidden scrollbar-hide">
-          <SidebarLink to="/" icon="fas fa-chart-line" collapsed={sidebarCollapsed}>{t('nav.dashboard')}</SidebarLink>
-          
-          <div className="my-2 border-t border-gray-100 dark:border-slate-900 opacity-50"></div>
-          
-          <SidebarLink to="/profile" icon="fas fa-user-circle" collapsed={sidebarCollapsed}>Hồ Sơ Của Tôi</SidebarLink>
-          <SidebarLink to="/products" icon="fas fa-boxes" collapsed={sidebarCollapsed}>{t('nav.products')}</SidebarLink>
-          <SidebarLink to="/suppliers" icon="fas fa-truck-field" collapsed={sidebarCollapsed}>{t('nav.suppliers')}</SidebarLink>
-          
-          {(userRole === 'Staff' || userRole === 'Admin') && !isResigned && (
-            <SidebarLink to="/create-invoice" icon="fas fa-file-invoice-dollar" collapsed={sidebarCollapsed}>{t('nav.create_invoice')}</SidebarLink>
-          )}
-          
-          {(userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && !isResigned && (
-            <SidebarLink to="/inventory-transfer" icon="fas fa-right-left" collapsed={sidebarCollapsed}>Chuyển Kho</SidebarLink>
-          )}
-
-          <SidebarLink to="/reports" icon="fas fa-file-contract" collapsed={sidebarCollapsed}>{t('nav.reports')}</SidebarLink>
-
-          <div className="my-6 border-t border-gray-100 dark:border-slate-900"></div>
-
-          {(userRole === 'Admin' || userRole === 'Retailer') && !isResigned && (
-            <SidebarLink to="/management" icon="fas fa-users-cog" collapsed={sidebarCollapsed}>Quản Lý</SidebarLink>
-          )}
-
-          {(userRole === 'Admin' || userRole === 'Provider') && !isResigned && (
-            <SidebarLink to="/warehouse-settings" icon="fas fa-cogs" collapsed={sidebarCollapsed}>Cấu Hình Kho</SidebarLink>
-          )}
-
-          {userRole === 'Admin' && !isResigned && (
-            <SidebarLink to="/site-permissions" icon="fas fa-shield-halved" collapsed={sidebarCollapsed}>Phân Quyền Site</SidebarLink>
-          )}
+          {renderNavLinks(sidebarCollapsed)}
         </div>
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-900">
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full flex items-center px-4 py-3.5 rounded-2xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 group"
           >
             <i className="fas fa-power-off w-6 text-center text-lg"></i>
-            {!sidebarCollapsed && <span className="ml-4 font-black text-[11px] uppercase tracking-[0.2em]">Đăng xuất</span>}
+            {!sidebarCollapsed && <span className="ml-4 font-black text-[11px] uppercase tracking-[0.2em]">Dang xuat</span>}
           </button>
         </div>
       </aside>
 
+      <div className={`fixed inset-0 z-50 xl:hidden ${mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+        ></div>
+
+        <aside className={`absolute right-0 top-0 h-full w-80 max-w-[88vw] bg-white dark:bg-slate-950 border-l border-indigo-100 dark:border-slate-800 shadow-2xl transition-transform duration-300 flex flex-col ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-5 flex items-center justify-between border-b border-gray-100 dark:border-slate-900">
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-xl font-black text-indigo-600 dark:text-indigo-500 tracking-tighter uppercase italic">
+              Tech<span className="text-gray-900 dark:text-white">Store</span>
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-900 text-gray-500 hover:text-indigo-500 transition-colors"
+            >
+              <i className="fas fa-xmark text-lg"></i>
+            </button>
+          </div>
+
+          <div className="flex-1 px-4 py-5 overflow-y-auto">
+            {renderNavLinks(false, () => setMobileMenuOpen(false))}
+          </div>
+
+          <div className="p-4 border-t border-gray-100 dark:border-slate-900">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-4 py-3.5 rounded-2xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 group"
+            >
+              <i className="fas fa-power-off w-6 text-center text-lg"></i>
+              <span className="ml-4 font-black text-[11px] uppercase tracking-[0.2em]">Dang xuat</span>
+            </button>
+          </div>
+        </aside>
+      </div>
+
       <main className={`flex-1 min-h-screen transition-all duration-500 flex flex-col ${sidebarCollapsed ? 'xl:mr-20' : 'xl:mr-72'} pt-16 xl:pt-0`}>
         <header className="h-20 px-8 flex items-center justify-between bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl border-b border-gray-100 dark:border-slate-900 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="xl:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-300 shadow-sm border border-gray-100 dark:border-slate-800"
+            >
+              <i className="fas fa-bars"></i>
+            </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-gray-600 dark:text-yellow-400 shadow-sm border border-gray-100 dark:border-slate-800 hover:scale-110 transition-transform"
@@ -219,9 +296,9 @@ function App() {
                   </span>
                   <div className="invisible group-hover:visible absolute right-0 mt-2 w-64 p-4 bg-slate-950 text-white text-[10px] rounded-2xl shadow-2xl z-50 border border-slate-800 opacity-98 backdrop-blur-md">
                     <p className="font-black text-indigo-400 mb-2 border-b border-slate-800 pb-2 flex items-center uppercase italic">
-                      <i className="fas fa-shield-halved mr-2"></i> Quyền hạn {userRole}
+                      <i className="fas fa-shield-halved mr-2"></i> Quyen han {userRole}
                     </p>
-                    <p className="leading-relaxed text-gray-300 font-medium">{roleDescriptions[userRole]}</p>
+                    <p className="leading-relaxed text-gray-300 font-medium">{roleDescriptions[userRole] || roleDescriptions.Staff}</p>
                   </div>
                 </div>
                 <Link to="/profile" className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight hover:text-indigo-600 transition-colors">

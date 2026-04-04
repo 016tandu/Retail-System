@@ -121,6 +121,12 @@ export default function ManagementPage() {
         </div>
       </div>
 
+      {submitting && (
+        <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30 text-sm font-bold">
+          Dang xu ly thao tac nhan su...
+        </div>
+      )}
+
       <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">

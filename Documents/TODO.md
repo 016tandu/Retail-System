@@ -95,7 +95,7 @@ ____
 
 
 
-## UI 
+## Improvements  
 
 - Password input: nên có nút show/hide (icon con mắc và con mắt bị gạch chéo)
 - Navigation bar: 
@@ -103,6 +103,11 @@ ____
     - đối với các cấp lớn hơn staff: cần có full CRUD cho các trang quản lý tồn kho, sản phẩm, hóa đơn 
     - đối với trang admin quản lý manager: cần có nút giáng cấp, còn đối với manager: có thể thăng cấp nhân viên (thêm confirmation modal cho từng thao tác quan trọng như thế này)
     -  navigation bar nên được chuyển qua bên phải dưới dạng có thể xổ ra hoặc đóng lại, nếu ở thiết bị nhỏ, thì nên thu nhỏ thành burger menu. 
+    - UI chỉ hiển thị những chức năng mà role hiện tại có thể nhìn thấy, ví dụ retailer vốn đã không thấy được trang tạo hóa đơn, thì UI không nên hiển thị trang tạo hóa đơn
+    - đối với mối quan hệ giữa retailer và supplier, không ai là superior của ai cả, họ là ngang cấp, vậy nên khi thăng chức và giáng chức, từ staff thì có thể lên supplier hoặc retailer, giáng chức từ supplier/retailer sẽ nhảy thẳng xuống staff. thăng chức từ supplier/staff sẽ nhảy thẳng lên admin.
+    - mối quan hệ đặc biệt của supplier và retailer trong cùng một miền, nếu chưa có sự điều chỉnh thủ công của admin, thì khi vừa mới tạo retailer, họ sẽ tự động được liên kết với (các) supplier cùng khu vực. hiện tại mối quan hệ giữa supplier và retailer chỉ là 1-1, tuy nhiên ta muốn nó là nhiều-nhiều, cần chỉnh sửa frontend tương ứng. VD: mới tạo retailer miền bắc Manager_MB thì tự động ở trang Supplier/Nhà cung cấp, họ sẽ thấy thông tin của các supplier miền bắc. Đương nhiên, admin có thể cắt thủ công hoặc thêm thủ công mối quan hệ với các supplier cùng/khác miền. Điều tương tự cũng xảy ra với Supplier và Retailer (vice versa). 
+    - trang giáng cấp hiện tại không hoạt động, giáng retailer vẫn không xuống staff. khi giáng và thăng cấp mà có liên quan tới cấp supplier/retailer thì phải có modal xác nhận rằng role nào cần thăng/giáng. cần check admin có thể thăng chức staff, nhưng retailer thì không thể. supplier thì không trực thuộc bất kỳ staff nào.
+    - cấp trên có thể sa thải cấp dưới trực tiếp của họ. nhưng cấp dưới nếu muốn deactivate thì cần phải gửi notice tới cấp trên gần nhất ở một sub section trong trang điều phối nhân sự tên là Pending/Yêu cầu từ cấp dưới.
     - dark và light mode hiện tại không hoạt động được do chưa có preset color được định nghĩa sẵn sẵn bên trong index.css/main.css (tùy cách bạn viết css), và kể cả khi đã xử lý được preset color rồi, thì màu sắc hắc ám chỉ được sửa ở phần bên ngoài giao diện, mà giao diện của các component bên trong vẫn chưa được thay đổi. 
     - hiện tại ở danh sách các function có sẵn trong supabase đã có function để thường xuyên tự động tạo smart invoice và phiếu vận chuyển, tuy nhiên function vẫn khong thể thường xuyên chạy (thậm chí vẫn chưa check tính khả dụng của function thông qua script check). cần tạo cron job trên supabase để script chạy thường xuyên, mỗi ngày cần có ít nhất 5 hóa đơn mỗi chi nhánh retailer từ những nhân viên đang active, mỗi info 
     -

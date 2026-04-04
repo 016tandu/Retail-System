@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
   :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
@@ -24,7 +30,7 @@
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s hide;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
