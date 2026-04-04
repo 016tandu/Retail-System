@@ -39,9 +39,12 @@ C4Context
 - **Auto-Profile:** A database trigger (`handle_new_user`) automatically creates a record in `NHAN_VIEN` linking the Auth UID to the business profile.
 
 ### 2. Two-Step Inventory Transfer
-- **Initiation:** A `Provider` selects products and a target warehouse to send stock.
-- **Notification:** The `Retailer` manager of the target warehouse sees the pending transfer.
-- **Action:** The `Retailer` can either **Confirm** (moving stock atomically) or **Decline** (providing a reason).
+- **Initiation:** A `Provider` selects a product, a source `stock_warehouse` they manage, and a target actor (`Provider` or `Retailer`).
+- **Destination Binding:** Destination warehouse is resolved from the selected target actor's managed warehouse.
+- **Policy Check:** Transfer is allowed by same-region defaults or admin-configured cross-site links.
+- **Notification:** The target actor sees the pending transfer.
+- **Action:** The target actor can either **Confirm** (moving stock atomically) or **Decline** (providing a reason).
+- **Audit Snapshot:** Each transfer records stock before/after values for source and destination warehouses.
 
 ### 3. Employee Resignation
 - Employees marked as `Resigned` in the database are visually flagged in the UI and restricted from performing transactional operations (Invoicing, Transfers).

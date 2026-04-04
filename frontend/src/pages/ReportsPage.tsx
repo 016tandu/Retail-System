@@ -41,6 +41,7 @@ export default function ReportsPage() {
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('Staff');
 
   const [startDate, setStartDate] = useState('2026-01-01');
   const [endDate, setEndDate] = useState(getToday());
@@ -57,11 +58,25 @@ export default function ReportsPage() {
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const bootstrap = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('NHAN_VIEN')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setUserRole(profile?.role || user.user_metadata?.role || 'Staff');
+      } else {
+        setUserRole('Staff');
+      }
+
       const { data } = await supabase.from('SAN_PHAM').select('MaSP, TenSP').order('MaSP');
       setProducts((data || []) as ProductOption[]);
     };
-    fetchProducts();
+    bootstrap();
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -70,12 +85,15 @@ export default function ReportsPage() {
     return products.filter((p) => `${p.MaSP} ${p.TenSP}`.toLowerCase().includes(needle));
   }, [products, productQuery]);
 
+  const isProvider = userRole === 'Provider';
+  const effectiveReport: ReportType = isProvider ? 'inventory' : activeReport;
+
   const reportTitle = useMemo(() => {
-    if (activeReport === 'revenue') return 'Doanh Thu';
-    if (activeReport === 'inventory') return 'Tồn Kho';
-    if (activeReport === 'top_selling') return 'Bán Chạy';
+    if (effectiveReport === 'revenue') return 'Doanh Thu';
+    if (effectiveReport === 'inventory') return 'Tồn Kho';
+    if (effectiveReport === 'top_selling') return 'Bán Chạy';
     return 'Lợi Nhuận';
-  }, [activeReport]);
+  }, [effectiveReport]);
 
   const formatCurrency = (value: unknown) => {
     const numeric = Number(value || 0);
@@ -90,7 +108,7 @@ export default function ReportsPage() {
     setError(null);
     setRows([]);
 
-    if (activeReport === 'revenue') {
+    if (effectiveReport === 'revenue') {
       const { data, error: rpcError } = await supabase.rpc('doanh_thu_vung', {
         start_date: startDate,
         end_date: endDate,
@@ -100,7 +118,7 @@ export default function ReportsPage() {
       else setRows((data || []) as ReportRow[]);
     }
 
-    if (activeReport === 'inventory') {
+    if (effectiveReport === 'inventory') {
       const { data, error: rpcError } = await supabase.rpc('ton_kho_toan_quoc', {
         p_masp: productId || null,
       });
@@ -108,13 +126,13 @@ export default function ReportsPage() {
       else setRows((data || []) as ReportRow[]);
     }
 
-    if (activeReport === 'top_selling') {
+    if (effectiveReport === 'top_selling') {
       const { data, error: rpcError } = await supabase.rpc('top_selling_products', { p_limit: limit });
       if (rpcError) setError(rpcError.message);
       else setRows((data || []) as ReportRow[]);
     }
 
-    if (activeReport === 'profitability') {
+    if (effectiveReport === 'profitability') {
       const { data, error: rpcError } = await supabase.rpc('calculate_profitability', {
         p_start_date: startDate,
         p_end_date: endDate,
@@ -130,8 +148,8 @@ export default function ReportsPage() {
     const timestamp = includeTimestamp
       ? `_${new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '')}`
       : '';
-    return `TechStore_${activeReport}${timestamp}`;
-  }, [activeReport, includeTimestamp]);
+    return `TechStore_${effectiveReport}${timestamp}`;
+  }, [effectiveReport, includeTimestamp]);
 
   const exportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -175,13 +193,14 @@ export default function ReportsPage() {
         <div className="w-full md:w-72">
           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Loại báo cáo</label>
           <select
-            value={activeReport}
+            value={effectiveReport}
             onChange={(e) => {
               setActiveReport(e.target.value as ReportType);
               setRows([]);
               setError(null);
               setShowPreview(false);
             }}
+            disabled={isProvider}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
           >
             <option value="revenue">Doanh Thu</option>
@@ -189,12 +208,17 @@ export default function ReportsPage() {
             <option value="top_selling">Bán Chạy</option>
             <option value="profitability">Lợi Nhuận</option>
           </select>
+          {isProvider && (
+            <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-500">
+              Provider chi xem duoc report ton kho.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end mb-6">
-          {(activeReport === 'revenue' || activeReport === 'profitability') && (
+          {(effectiveReport === 'revenue' || effectiveReport === 'profitability') && (
             <>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Từ ngày</label>
@@ -217,7 +241,7 @@ export default function ReportsPage() {
             </>
           )}
 
-          {activeReport === 'revenue' && (
+          {effectiveReport === 'revenue' && (
             <div>
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Miền</label>
               <select
@@ -233,7 +257,7 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {activeReport === 'inventory' && (
+          {effectiveReport === 'inventory' && (
             <div className="md:col-span-2 grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tìm sản phẩm (mã + tên)</label>
@@ -263,7 +287,7 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {activeReport === 'top_selling' && (
+          {effectiveReport === 'top_selling' && (
             <div className="md:col-span-2">
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Số lượng hiển thị</label>
               <input
@@ -384,14 +408,14 @@ export default function ReportsPage() {
         <div className="overflow-x-auto rounded-2xl border dark:border-slate-800">
           <table className="w-full text-left">
             <thead className="bg-gray-50 dark:bg-slate-950 text-[10px] uppercase font-black text-gray-500 dark:text-slate-500 tracking-[0.2em] border-b dark:border-slate-800">
-              {activeReport === 'revenue' && (
+              {effectiveReport === 'revenue' && (
                 <tr>
                   <th className="px-8 py-5">Khu Vực</th>
                   <th className="px-8 py-5 text-center">Số đơn hàng</th>
                   <th className="px-8 py-5 text-right">Doanh thu</th>
                 </tr>
               )}
-              {activeReport === 'inventory' && (
+              {effectiveReport === 'inventory' && (
                 <tr>
                   <th className="px-8 py-5">Mã Kho</th>
                   <th className="px-8 py-5">Tên Kho</th>
@@ -399,14 +423,14 @@ export default function ReportsPage() {
                   <th className="px-8 py-5 text-center">Số lượng tồn</th>
                 </tr>
               )}
-              {activeReport === 'top_selling' && (
+              {effectiveReport === 'top_selling' && (
                 <tr>
                   <th className="px-8 py-5">Mã SP</th>
                   <th className="px-8 py-5">Tên Sản Phẩm</th>
                   <th className="px-8 py-5 text-center">Số lượng đã bán</th>
                 </tr>
               )}
-              {activeReport === 'profitability' && (
+              {effectiveReport === 'profitability' && (
                 <tr>
                   <th className="px-8 py-5">Sản phẩm</th>
                   <th className="px-8 py-5 text-center">Đã bán</th>
@@ -424,7 +448,7 @@ export default function ReportsPage() {
                 </tr>
               ) : rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                  {activeReport === 'revenue' && (() => {
+                  {effectiveReport === 'revenue' && (() => {
                     const revenueRow = row as RevenueReport;
                     return (
                       <>
@@ -435,7 +459,7 @@ export default function ReportsPage() {
                     );
                   })()}
 
-                  {activeReport === 'inventory' && (() => {
+                  {effectiveReport === 'inventory' && (() => {
                     const inventoryRow = row as InventoryReport;
                     return (
                       <>
@@ -447,7 +471,7 @@ export default function ReportsPage() {
                     );
                   })()}
 
-                  {activeReport === 'top_selling' && (() => {
+                  {effectiveReport === 'top_selling' && (() => {
                     const topSellingRow = row as TopSellingReport;
                     return (
                       <>
@@ -458,7 +482,7 @@ export default function ReportsPage() {
                     );
                   })()}
 
-                  {activeReport === 'profitability' && (() => {
+                  {effectiveReport === 'profitability' && (() => {
                     const profitabilityRow = row as ProfitabilityReport;
                     return (
                       <>
@@ -487,3 +511,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+

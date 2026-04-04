@@ -13,6 +13,17 @@ Hệ thống được thiết kế với 4 vai trò chính, mỗi vai trò có p
 | **Retailer** | Quản lý chi nhánh, tạo hóa đơn bán lẻ, nhận hàng từ kho tổng. | Không được phép nhập hàng trực tiếp từ NCC bên ngoài. |
 | **Staff** | Xem danh mục sản phẩm, báo cáo cơ bản và tồn kho. | Không có quyền thực hiện các giao dịch làm thay đổi số lượng kho. |
 
+## 1.1 Phân biệt thực thể nghiệp vụ
+
+- **Khu vực (`KHU_VUC`)**: Miền logic (ví dụ `MB`, `MN`, `MT`). Mỗi khu vực có thể có **nhiều kho**.
+- **Kho (`KHO`)**: Điểm chứa/luân chuyển hàng vật lý và tồn kho.
+- **Loại kho (`WarehouseType`)**:
+  - `stock_warehouse`: Kho chứa/trung tâm điều phối.
+  - `retail_warehouse`: Kho bán lẻ/chi nhánh.
+- **Supplier master (`NHA_CUNG_CAP`)**: Danh mục đối tác NCC theo khu vực, dùng cho chính sách link và nhập hàng.
+- **Supplier user (`NHAN_VIEN.role = Provider`)**: Người dùng nội bộ vận hành kho nguồn.
+- **Retailer user (`NHAN_VIEN.role = Retailer`)**: Người dùng nội bộ vận hành kho bán lẻ.
+
 ## 2. Mô hình Quản lý Thác nước (Waterfall Management)
 
 Để đảm bảo tính kỷ luật và phân cấp, hệ thống áp dụng mô hình quản lý gián tiếp:
@@ -22,11 +33,32 @@ Hệ thống được thiết kế với 4 vai trò chính, mỗi vai trò có p
 
 ## 3. Quy trình Chuyển kho (Inventory Transfer)
 
-Đây là quy trình 2 bước để đảm bảo tính chính xác và trách nhiệm:
-1.  **Giai đoạn Gửi (Initiate):** Người dùng `Provider` hoặc `Admin` tạo yêu cầu chuyển sản phẩm X từ kho A sang kho B. Số lượng tồn kho lúc này chưa thay đổi.
-2.  **Giai đoạn Nhận (Confirm/Decline):** Quản lý chi nhánh (`Retailer`) tại kho B sẽ thấy yêu cầu. 
-    - Nếu **Confirm**: Tồn kho tại kho A giảm, tồn kho tại kho B tăng (tự động xử lý trong 1 transaction).
-    - Nếu **Decline**: Yêu cầu bị đóng lại với lý do cụ thể (Hư hỏng, Sai số lượng, v.v.), tồn kho không đổi.
+Đây là quy trình 2 bước, actor-aware:
+1. **Giai đoạn Gửi (Initiate):**
+   - `Provider` (hoặc `Admin`) chọn:
+     - Sản phẩm.
+     - **Kho nguồn** mà supplier đang quản lý (bắt buộc là `stock_warehouse`).
+     - **Actor nhận** (`Provider` hoặc `Retailer`).
+   - **Kho đích** tự động lấy theo kho mà actor nhận đang quản lý.
+   - Hệ thống tự kiểm tra:
+     - Kho nguồn khác kho đích.
+     - Actor nhận có đúng vai trò và đúng kho đích.
+     - Rule cùng khu vực hoặc cross-site được link bởi admin.
+   - Tồn kho chưa thay đổi ở trạng thái `PENDING`.
+2. **Giai đoạn Nhận (Accept/Decline):**
+   - Actor nhận (có thể là `Provider` hoặc `Retailer`) xử lý pending.
+   - Nếu **Accept**:
+     - Tồn kho nguồn giảm, tồn kho đích tăng trong cùng transaction.
+     - Lưu snapshot lịch sử: tồn trước, số lượng chuyển, tồn sau.
+   - Nếu **Decline**:
+     - Yêu cầu đóng với lý do từ chối.
+     - Tồn kho không đổi.
+
+### 3.1 Quy tắc link theo khu vực và cross-site
+
+- Mặc định, link `Retailer-Supplier` được thiết lập trong cùng khu vực.
+- `Admin` có thể mở rộng link cross-site cho nhu cầu liên vùng.
+- `Provider` mặc định quản lý các kho trong khu vực của mình; có thể mở rộng thủ công (manual link) để phục vụ liên vùng.
 
 ## 4. Quản lý Nhân sự & Trạng thái Nghỉ việc
 
