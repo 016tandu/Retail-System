@@ -56,24 +56,6 @@ This document outlines the roadmap for the TechStore application.
 
 ---
 
-## Phase 6: Identity & Management Hierarchy (New)
-
--   [ ] **Feature: My Profile Management**
-    -   **User Perspective:** "I want to view and update my personal information (Full Name, Date of Birth)."
-    -   **Developer Perspective:** Create `MyProfilePage.tsx` using `update_my_profile` RPC.
--   [ ] **Feature: Waterfall Management Model**
-    -   **Workflow:** 
-        - **Admin:** Manages `Provider` and `Retailer`. Cannot directly edit `Staff`.
-        - **Retailer:** Manages `Staff` within their own warehouse.
-    -   **Developer Perspective:** Implement `manage_employee` RPC with hierarchy checks. Create `EmployeeManagementPage.tsx`.
--   [ ] **Feature: Warehouse Administration (Provider)**
-    -   **User Perspective:** "As a Provider, I want to edit warehouse details like names and locations."
-    -   **Developer Perspective:** Create `WarehouseSettingsPage.tsx` using `update_warehouse_info` RPC.
-
-
-
-
-
 ____
 
 ## Extra Tasks (Completed)
@@ -113,3 +95,4 @@ ____
     - [x] tất cả các report và CRUD actions đều có lỗi RLS policy. riêng một vấn đề quan sát được ở role admin, trang report, các chức năng đều trả về lỗi ở UI là new row violates RLS security policy for table TON_KHIO, ở network log thì hiển thị message no api found in request, hint: no ai key request header or url param was found, 403 error. (DB RPC/RLS done)
     - [x] đối với provider, chỉ giới hạn quyền hạn xem các report ở tồn kho. đối với chuyển kho, dropdown cho phần người nhận chỉ hiển thị những người nhận họ có linked tới (ở phần dropdown, nên có một text ở phía bên phải chỉ cho user biết người đó ở khu vực nào luôn). ở trang admin phân quyền site, ở phần thêm kho liên kết cho retailer, nên có dropdown option cho tất cả các kho thay vì chỉ là một site.
     - [x] ở chức vụ staff, trang profile phải hiển thị DANH SÁCH của các retailer trong cùng khu vực mà quản lý trực tiếp người dùng đó.
+    - [] đối với admin: xem được lịch sử hóa đơn của các khu vực. đối vơi retailer: xem được tất cả các hóa đơn được tạo trong khu vực đó. đối với nhân viên: xem được tất cả hóa đơn mà bản thân họ tạo. thiết kế UI vào một trang mới. tạo report riêng cho chức năng này bên trong report (với các chức năng lọc nâng cao hơn mà bạn có thể nghĩ)
