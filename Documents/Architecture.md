@@ -48,3 +48,182 @@ C4Context
 
 ### 3. Employee Resignation
 - Employees marked as `Resigned` in the database are visually flagged in the UI and restricted from performing transactional operations (Invoicing, Transfers).
+
+
+### 
+
+Bạn có thể thêm một **section dành riêng cho coding agents** trong `Architecture.md` để đảm bảo mọi agent (AI hoặc developer automation) đều **xác nhận môi trường trước khi chạy workflow**. Ý tưởng là:
+
+* xác nhận **Docker container Supabase đang chạy**
+* xác nhận **Supabase CLI hoạt động**
+* xác nhận **Postgres port connect được**
+* xác nhận **schema query được**
+
+Tôi đề xuất thêm mục này vào cuối `Architecture.md`.
+
+---
+
+# Markdown Section đề xuất thêm
+
+````markdown
+---
+
+## 4. Development Environment Verification (For Coding Agents)
+
+This section defines the required environment checks that any coding agent (AI or automation scripts) must perform before executing database-related tasks.
+
+The goal is to ensure that the Supabase local development environment is fully operational.
+
+### Required CLI Tools
+
+The following tools must be available in the system PATH:
+
+| Tool | Purpose |
+|-----|------|
+| `docker` | Run Supabase containers |
+| `supabase` CLI | Manage migrations and Supabase services |
+| `psql` | Direct PostgreSQL query execution |
+
+Verify installation:
+
+```bash
+docker --version
+supabase --version
+psql --version
+````
+
+---
+
+## Environment Health Check Script
+
+Agents should run the following script before executing any database operations.
+
+### verify_env.sh
+
+```bash
+#!/usr/bin/env bash
+
+set -e
+
+echo "Checking Docker..."
+
+docker info > /dev/null || {
+  echo "Docker is not running"
+  exit 1
+}
+
+echo "Checking Supabase CLI..."
+
+supabase --version > /dev/null || {
+  echo "Supabase CLI not installed"
+  exit 1
+}
+
+echo "Checking Postgres connection..."
+
+psql postgres://postgres:postgres@localhost:54322/postgres -c "SELECT 1;" > /dev/null || {
+  echo "Postgres connection failed"
+  exit 1
+}
+
+echo "Checking Supabase containers..."
+
+docker ps | grep supabase-db > /dev/null || {
+  echo "Supabase database container not running"
+  exit 1
+}
+
+echo "Environment OK"
+```
+
+---
+
+## Expected Local Ports
+
+Supabase local development uses the following ports:
+
+| Service     | Port  |
+| ----------- | ----- |
+| Postgres    | 54322 |
+| API Gateway | 54321 |
+| Studio      | 54323 |
+
+Agents should assume the PostgreSQL connection string:
+
+```
+postgresql://postgres:postgres@localhost:54322/postgres
+```
+
+---
+
+## Agent Database Workflow
+
+Coding agents should follow this workflow when modifying the database.
+
+### Schema Changes
+
+Use Supabase migrations.
+
+```
+supabase migration new <migration_name>
+supabase db push
+```
+
+### Query / Debug
+
+Use direct PostgreSQL queries.
+
+```
+psql postgres://postgres:postgres@localhost:54322/postgres
+```
+
+### Reset Database (Development Only)
+
+```
+supabase db reset
+```
+
+---
+
+## Agent Safety Rules
+
+Coding agents must follow these rules:
+
+1. Never modify schema directly without a migration file.
+2. Always verify the environment before executing queries.
+3. Prefer direct Postgres queries (`psql`) for fast iteration.
+4. Use `supabase db push` only for schema synchronization.
+
+---
+
+## Quick Environment Check (One-liner)
+
+Agents can run this quick check before starting tasks:
+
+```bash
+docker ps | grep supabase-db && \
+psql postgres://postgres:postgres@localhost:54322/postgres -c "SELECT 1;"
+```
+
+If both commands succeed, the environment is ready.
+
+```
+
+```
+Agent
+↓
+verify_env.sh
+↓
+supabase migration
+↓
+psql query
+↓
+continue coding
+
+```
+
+local engine connection:
+admin password: 123
+port: 5432
+locale: default
+
