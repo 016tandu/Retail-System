@@ -96,6 +96,19 @@ const isAutoInvoice = (item: InvoiceRecord) => {
   return item.maHD.startsWith('AT-') || note.includes('auto') || normalized.startsWith('hoa don [');
 };
 
+const formatInvoiceNote = (note: string, language: 'vi' | 'en') => {
+  if (!note) return '-';
+  const vnAutoMatch =
+    note.match(/^Hóa đơn \[(.+?)\] bởi (.+?) \(([^)]+)\)$/i) ||
+    note.match(/^Hoa don \[(.+?)\] boi (.+?) \(([^)]+)\)$/i);
+
+  if (vnAutoMatch && language === 'en') {
+    return `Invoice [${vnAutoMatch[1]}] by ${vnAutoMatch[2]} (${vnAutoMatch[3]})`;
+  }
+
+  return note;
+};
+
 export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistoryWorkspaceProps) {
   const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<RoleProfile | null>(null);
@@ -595,7 +608,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
                               : 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800'
                           }`}
                         >
-                          {item.ghiChu}
+                          {formatInvoiceNote(item.ghiChu, language)}
                         </span>
                       ) : (
                         '-'
