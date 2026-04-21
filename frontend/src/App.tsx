@@ -165,7 +165,7 @@ function App() {
 
       {canViewInvoiceHistory && (
         <SidebarLink to="/invoice-history" icon="fas fa-receipt" collapsed={collapsed} onClick={onNavigate}>
-          Lich Su Hoa Don
+          {t('nav.invoice_history')}
         </SidebarLink>
       )}
 

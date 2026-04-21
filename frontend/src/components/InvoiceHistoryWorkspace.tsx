@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 
 type EmployeeRole = 'Admin' | 'Provider' | 'Retailer' | 'Staff';
@@ -69,11 +70,17 @@ const asSingle = <T,>(value: T | T[] | null | undefined): T | null => {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 };
 
-const toCurrency = (value: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+const toCurrency = (value: number, language: 'vi' | 'en') =>
+  new Intl.NumberFormat(language === 'vi' ? 'vi-VN' : 'en-US', {
+    style: 'currency',
+    currency: 'VND',
+  }).format(value);
 
-const toDateTime = (value: string) =>
-  new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+const toDateTime = (value: string, language: 'vi' | 'en') =>
+  new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(value));
 
 const csvEscape = (value: string | number) => {
   const text = String(value ?? '');
@@ -85,15 +92,12 @@ const csvEscape = (value: string | number) => {
 
 const isAutoInvoice = (item: InvoiceRecord) => {
   const note = item.ghiChu.toLowerCase();
-  return (
-    item.maHD.startsWith('AT-') ||
-    note.includes('auto') ||
-    note.startsWith('hoa don [') ||
-    note.startsWith('hóa đơn [')
-  );
+  const normalized = note.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return item.maHD.startsWith('AT-') || note.includes('auto') || normalized.startsWith('hoa don [');
 };
 
 export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistoryWorkspaceProps) {
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<RoleProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +115,8 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
   const [sortBy, setSortBy] = useState<'NgayLap' | 'TongTien'>('NgayLap');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  const language: 'vi' | 'en' = i18n.language.startsWith('vi') ? 'vi' : 'en';
+
   useEffect(() => {
     const bootstrap = async () => {
       setLoading(true);
@@ -119,7 +125,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
       const user = authData.user;
 
       if (!user) {
-        setError('Khong tim thay phien dang nhap.');
+        setError(t('invoice_history.session_not_found'));
         setLoading(false);
         return;
       }
@@ -151,7 +157,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
     };
 
     void bootstrap();
-  }, []);
+  }, [t, i18n.language]);
 
   const loadData = async () => {
     if (!profile) return;
@@ -215,7 +221,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
         maKho: item.MaKho,
         tongTien: Number(item.TongTien || 0),
         ghiChu: item.GhiChu || '',
-        employeeName: employee?.HoTen || 'Unknown',
+        employeeName: employee?.HoTen || '',
         employeeRole: employee?.role || '-',
         warehouseName: warehouse?.TenKho || item.MaKho,
         region: warehouse?.KhuVuc || '-',
@@ -295,7 +301,19 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
   }, [filteredRecords]);
 
   const exportCsv = () => {
-    const headers = ['MaHD', 'NgayLap', 'KhuVuc', 'MaKho', 'TenKho', 'MaNV', 'NguoiTao', 'RoleNguoiTao', 'TongTien', 'GhiChu'];
+    const headers = [
+      t('invoice_history.csv.ma_hd'),
+      t('invoice_history.csv.ngay_lap'),
+      t('invoice_history.csv.khu_vuc'),
+      t('invoice_history.csv.ma_kho'),
+      t('invoice_history.csv.ten_kho'),
+      t('invoice_history.csv.ma_nv'),
+      t('invoice_history.csv.nguoi_tao'),
+      t('invoice_history.csv.role_nguoi_tao'),
+      t('invoice_history.csv.tong_tien'),
+      t('invoice_history.csv.ghi_chu'),
+    ];
+
     const rows = filteredRecords.map((item) =>
       [
         item.maHD,
@@ -304,7 +322,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
         item.maKho,
         item.warehouseName,
         item.maNV,
-        item.employeeName,
+        item.employeeName || t('invoice_history.unknown_employee'),
         item.employeeRole,
         item.tongTien,
         item.ghiChu,
@@ -312,12 +330,13 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
         .map(csvEscape)
         .join(',')
     );
+
     const csv = `${headers.join(',')}\n${rows.join('\n')}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `invoice_history_${today()}.csv`;
+    anchor.download = `${t('invoice_history.file_prefix')}_${today()}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -325,32 +344,37 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
   };
 
   if (loading && !profile) {
-    return <div className="text-center py-10 dark:text-gray-400 italic font-black animate-pulse">Dang tai lich su hoa don...</div>;
+    return <div className="text-center py-10 dark:text-gray-400 italic font-black animate-pulse">{t('invoice_history.loading')}</div>;
   }
 
   if (!profile) {
-    return <div className="text-center py-10 text-red-600 font-bold">Khong xac dinh duoc profile hien tai.</div>;
+    return <div className="text-center py-10 text-red-600 font-bold">{t('invoice_history.profile_not_found')}</div>;
   }
 
   if (!ALLOWED_ROLES.includes(profile.role)) {
     return (
       <div className="max-w-3xl mx-auto mt-6 p-8 bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-900 rounded-3xl text-center">
-        <h3 className="text-xl font-black uppercase tracking-tight text-orange-700 dark:text-orange-400">Role khong duoc cap quyen</h3>
-        <p className="text-orange-600 dark:text-orange-500/70 font-medium mt-2">Trang nay chi mo cho Admin, Retailer va Staff.</p>
+        <h3 className="text-xl font-black uppercase tracking-tight text-orange-700 dark:text-orange-400">{t('invoice_history.not_allowed_title')}</h3>
+        <p className="text-orange-600 dark:text-orange-500/70 font-medium mt-2">{t('invoice_history.not_allowed_desc')}</p>
       </div>
     );
   }
+
+  const roleBadgeText =
+    profile.role === 'Staff'
+      ? t('invoice_history.role_badge', { role: profile.role })
+      : t('invoice_history.role_region_badge', { role: profile.role, region: profile.region || '-' });
 
   return (
     <div className="space-y-6">
       {mode === 'page' && (
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b dark:border-slate-800 pb-5 gap-4">
           <div>
-            <h2 className="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tighter italic">Lich Su Hoa Don</h2>
-            <p className="text-gray-500 dark:text-slate-400 font-bold mt-1 uppercase tracking-widest text-[10px]">Invoice History Workspace</p>
+            <h2 className="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tighter italic">{t('invoice_history.title')}</h2>
+            <p className="text-gray-500 dark:text-slate-400 font-bold mt-1 uppercase tracking-widest text-[10px]">{t('invoice_history.subtitle')}</p>
           </div>
           <div className="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest">
-            Role: {profile.role} {profile.role !== 'Staff' ? `| Region: ${profile.region || '-'}` : ''}
+            {roleBadgeText}
           </div>
         </div>
       )}
@@ -358,7 +382,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tu ngay</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.from_date')}</label>
             <input
               type="date"
               value={startDate}
@@ -367,7 +391,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Den ngay</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.to_date')}</label>
             <input
               type="date"
               value={endDate}
@@ -376,14 +400,14 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Khu vuc</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.region')}</label>
             <select
               value={regionFilter}
               onChange={(e) => setRegionFilter(e.target.value)}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
               disabled={profile.role === 'Retailer'}
             >
-              <option value="ALL">Tat ca</option>
+              <option value="ALL">{t('invoice_history.all')}</option>
               {regions.map((region) => (
                 <option key={region} value={region}>
                   {region}
@@ -392,13 +416,13 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Kho</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.warehouse')}</label>
             <select
               value={warehouseFilter}
               onChange={(e) => setWarehouseFilter(e.target.value)}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
             >
-              <option value="ALL">Tat ca</option>
+              <option value="ALL">{t('invoice_history.all')}</option>
               {warehouses.map((warehouse) => (
                 <option key={warehouse.maKho} value={warehouse.maKho}>
                   {warehouse.maKho} - {warehouse.name}
@@ -407,33 +431,33 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nguoi tao</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.creator')}</label>
             <select
               value={employeeFilter}
               onChange={(e) => setEmployeeFilter(e.target.value)}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
               disabled={profile.role === 'Staff'}
             >
-              <option value="ALL">Tat ca</option>
+              <option value="ALL">{t('invoice_history.all')}</option>
               {employees.map((employee) => (
                 <option key={employee.maNV} value={employee.maNV}>
-                  {employee.maNV} - {employee.name}
+                  {employee.maNV} - {employee.name || t('invoice_history.unknown_employee')}
                 </option>
               ))}
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tim nhanh</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.quick_search')}</label>
             <input
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Ma HD, kho, nhan su..."
+              placeholder={t('invoice_history.quick_search_placeholder')}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tong tien tu</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.min_total')}</label>
             <input
               type="number"
               value={minTotal}
@@ -443,7 +467,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tong tien den</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.max_total')}</label>
             <input
               type="number"
               value={maxTotal}
@@ -453,31 +477,31 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Sort by</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.sort_by')}</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'NgayLap' | 'TongTien')}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
             >
-              <option value="NgayLap">Ngay lap</option>
-              <option value="TongTien">Tong tien</option>
+              <option value="NgayLap">{t('invoice_history.sort_date')}</option>
+              <option value="TongTien">{t('invoice_history.sort_total')}</option>
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Chieu sap xep</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('invoice_history.sort_direction')}</label>
             <select
               value={sortDir}
               onChange={(e) => setSortDir(e.target.value as 'asc' | 'desc')}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
             >
-              <option value="desc">Giam dan</option>
-              <option value="asc">Tang dan</option>
+              <option value="desc">{t('invoice_history.sort_desc')}</option>
+              <option value="asc">{t('invoice_history.sort_asc')}</option>
             </select>
           </div>
           <div className="md:col-span-2 flex items-end">
             <label className="inline-flex items-center space-x-2 text-[11px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-widest">
               <input type="checkbox" checked={onlyAuto} onChange={(e) => setOnlyAuto(e.target.checked)} />
-              <span>Chi hoa don auto</span>
+              <span>{t('invoice_history.only_auto')}</span>
             </label>
           </div>
           <div className="md:col-span-4 flex items-end gap-2">
@@ -487,7 +511,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
               className="flex-1 bg-indigo-600 text-white font-black py-2.5 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all uppercase text-[10px] tracking-widest active:scale-95"
             >
               {loading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-arrows-rotate mr-2"></i>}
-              Lam moi
+              {t('invoice_history.refresh')}
             </button>
             <button
               onClick={exportCsv}
@@ -495,23 +519,23 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
               className="flex-1 bg-emerald-600 text-white font-black py-2.5 rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none transition-all uppercase text-[10px] tracking-widest active:scale-95 disabled:opacity-50"
             >
               <i className="fas fa-file-csv mr-2"></i>
-              Export CSV
+              {t('invoice_history.export_csv')}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-950/20 p-4">
-            <div className="text-[10px] uppercase tracking-widest font-black text-indigo-500">So hoa don</div>
+            <div className="text-[10px] uppercase tracking-widest font-black text-indigo-500">{t('invoice_history.summary_count')}</div>
             <div className="text-2xl font-black text-indigo-700 dark:text-indigo-300">{summary.count}</div>
           </div>
           <div className="rounded-2xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-4">
-            <div className="text-[10px] uppercase tracking-widest font-black text-emerald-500">Tong doanh thu</div>
-            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{toCurrency(summary.revenue)}</div>
+            <div className="text-[10px] uppercase tracking-widest font-black text-emerald-500">{t('invoice_history.summary_revenue')}</div>
+            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{toCurrency(summary.revenue, language)}</div>
           </div>
           <div className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-4">
-            <div className="text-[10px] uppercase tracking-widest font-black text-amber-500">Trung binh / hoa don</div>
-            <div className="text-2xl font-black text-amber-700 dark:text-amber-300">{toCurrency(summary.avg)}</div>
+            <div className="text-[10px] uppercase tracking-widest font-black text-amber-500">{t('invoice_history.summary_avg')}</div>
+            <div className="text-2xl font-black text-amber-700 dark:text-amber-300">{toCurrency(summary.avg, language)}</div>
           </div>
         </div>
 
@@ -525,27 +549,27 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
           <table className="w-full text-left">
             <thead className="bg-gray-50 dark:bg-slate-950 text-[10px] uppercase font-black text-gray-500 dark:text-slate-500 tracking-[0.2em] border-b dark:border-slate-800">
               <tr>
-                <th className="px-5 py-4">Ma HD</th>
-                <th className="px-5 py-4">Ngay lap</th>
-                <th className="px-5 py-4">Khu vuc</th>
-                <th className="px-5 py-4">Kho</th>
-                <th className="px-5 py-4">Nguoi tao</th>
-                <th className="px-5 py-4 text-right">Tong tien</th>
-                <th className="px-5 py-4">Ghi chu</th>
+                <th className="px-5 py-4">{t('invoice_history.table.ma_hd')}</th>
+                <th className="px-5 py-4">{t('invoice_history.table.ngay_lap')}</th>
+                <th className="px-5 py-4">{t('invoice_history.table.khu_vuc')}</th>
+                <th className="px-5 py-4">{t('invoice_history.table.kho')}</th>
+                <th className="px-5 py-4">{t('invoice_history.table.nguoi_tao')}</th>
+                <th className="px-5 py-4 text-right">{t('invoice_history.table.tong_tien')}</th>
+                <th className="px-5 py-4">{t('invoice_history.table.ghi_chu')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center text-gray-400 italic font-medium">
-                    Khong co hoa don phu hop bo loc.
+                    {t('invoice_history.empty_result')}
                   </td>
                 </tr>
               ) : (
                 filteredRecords.map((item) => (
                   <tr key={item.maHD} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-5 py-4 font-mono text-xs font-bold">{item.maHD}</td>
-                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{toDateTime(item.ngayLap)}</td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{toDateTime(item.ngayLap, language)}</td>
                     <td className="px-5 py-4">
                       <span className="px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
                         {item.region}
@@ -556,12 +580,12 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
                       <div className="text-xs text-slate-400">{item.warehouseName}</div>
                     </td>
                     <td className="px-5 py-4 text-sm">
-                      <div className="font-black text-slate-700 dark:text-slate-200">{item.employeeName}</div>
+                      <div className="font-black text-slate-700 dark:text-slate-200">{item.employeeName || t('invoice_history.unknown_employee')}</div>
                       <div className="text-xs text-slate-400">
                         {item.maNV} - {item.employeeRole}
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-right font-black text-emerald-600 dark:text-emerald-400">{toCurrency(item.tongTien)}</td>
+                    <td className="px-5 py-4 text-right font-black text-emerald-600 dark:text-emerald-400">{toCurrency(item.tongTien, language)}</td>
                     <td className="px-5 py-4 text-xs text-slate-500">
                       {item.ghiChu ? (
                         <span
