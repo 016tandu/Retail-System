@@ -56,20 +56,15 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ HoTen: string; role: string; TrangThai: string } | null>(null);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+    document.documentElement.classList.remove('dark');
+    document.body.classList.remove('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -279,12 +274,7 @@ function App() {
             >
               <i className="fas fa-bars"></i>
             </button>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-gray-600 dark:text-yellow-400 shadow-sm border border-gray-100 dark:border-slate-800 hover:scale-110 transition-transform"
-            >
-              <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-            </button>
+            {/* Dark mode toggle is intentionally disabled: deployment uses light theme only. */}
             <button
               onClick={toggleLanguage}
               className="px-3 py-1 text-[10px] font-black bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg shadow-sm dark:text-indigo-400 uppercase"
