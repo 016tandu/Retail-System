@@ -53,3 +53,9 @@ This document outlines the roadmap for the TechStore application.
 -   [x] **Accessibility:** Info Icons (i) for business logic explanation + Password Toggle.
 -   [x] **Security:** Robust Auth Triggers with search_path safety.
 -   [x] **Identity:** Nearest Superior display in Profile (Staff -> Retailer -> Admin).
+
+---
+
+## Legacy Improvements Cross-check (from HEAD~1)
+- [x] Admin can view invoice history by region, Retailer can view all invoices in own region, Staff can view invoices created by self (new page + report mode with advanced filters).
+- [x] Superior can fire direct subordinate; subordinates request deactivate via `Pending / Yeu cau tu cap duoi` section for superior review.

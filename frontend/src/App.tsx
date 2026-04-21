@@ -14,6 +14,7 @@ import MyProfilePage from './pages/MyProfilePage';
 import ManagementPage from './pages/ManagementPage';
 import WarehouseSettingsPage from './pages/WarehouseSettingsPage';
 import SitePermissionsPage from './pages/SitePermissionsPage';
+import InvoiceHistoryPage from './pages/InvoiceHistoryPage';
 import './App.css';
 
 const SidebarLink = ({
@@ -140,8 +141,9 @@ function App() {
   const isResigned = profile?.TrangThai === 'Resigned';
 
   const canCreateInvoice = (userRole === 'Staff' || userRole === 'Admin') && !isResigned;
+  const canViewInvoiceHistory = (userRole === 'Admin' || userRole === 'Retailer' || userRole === 'Staff') && !isResigned;
   const canTransfer = (userRole === 'Provider' || userRole === 'Retailer' || userRole === 'Admin') && !isResigned;
-  const canManagement = (userRole === 'Admin' || userRole === 'Retailer') && !isResigned;
+  const canManagement = !isResigned;
   const canWarehouseSettings = (userRole === 'Admin' || userRole === 'Provider') && !isResigned;
   const canSitePermissions = userRole === 'Admin' && !isResigned;
 
@@ -163,6 +165,12 @@ function App() {
       {canCreateInvoice && (
         <SidebarLink to="/create-invoice" icon="fas fa-file-invoice-dollar" collapsed={collapsed} onClick={onNavigate}>
           {t('nav.create_invoice')}
+        </SidebarLink>
+      )}
+
+      {canViewInvoiceHistory && (
+        <SidebarLink to="/invoice-history" icon="fas fa-receipt" collapsed={collapsed} onClick={onNavigate}>
+          Lich Su Hoa Don
         </SidebarLink>
       )}
 
@@ -320,6 +328,7 @@ function App() {
             <Route path="/suppliers" element={<SuppliersPage />} />
             <Route path="/create-invoice" element={<CreateInvoicePage />} />
             <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
+            <Route path="/invoice-history" element={<InvoiceHistoryPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/profile" element={<MyProfilePage />} />
             <Route path="/management" element={<ManagementPage />} />

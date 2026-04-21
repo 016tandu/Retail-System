@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient.ts';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import InvoiceHistoryWorkspace from '../components/InvoiceHistoryWorkspace';
 
 type RevenueReport = { khu_vuc: string; so_don_hang: number; doanh_thu: number };
 type InventoryReport = { ma_kho: string; ten_kho: string; khu_vuc: string; so_luong_ton: number };
@@ -19,7 +20,7 @@ type ProfitabilityReport = {
 };
 
 type ReportRow = Record<string, unknown>;
-type ReportType = 'revenue' | 'inventory' | 'top_selling' | 'profitability';
+type ReportType = 'revenue' | 'inventory' | 'top_selling' | 'profitability' | 'invoice_history';
 type ProductOption = { MaSP: string; TenSP: string };
 
 const getToday = () => new Date().toISOString().split('T')[0];
@@ -179,6 +180,49 @@ export default function ReportsPage() {
   const previewHeaders = rows.length > 0 ? Object.keys(rows[0]) : [];
   const previewRows = rows.slice(0, 8);
 
+  if (effectiveReport === 'invoice_history') {
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 pb-20">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b dark:border-slate-800 pb-6 gap-4">
+          <div>
+            <h2 className="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tighter italic flex items-center">
+              {t('reports.title')}
+              <InfoIcon text="Invoice history report with advanced filtering for role-based visibility." />
+            </h2>
+            <p className="text-gray-500 dark:text-slate-400 font-bold mt-1 uppercase tracking-widest text-[10px]">Business Intelligence Module</p>
+          </div>
+
+          <div className="w-full md:w-72">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Loai bao cao</label>
+            <select
+              value={effectiveReport}
+              onChange={(e) => {
+                setActiveReport(e.target.value as ReportType);
+                setRows([]);
+                setError(null);
+                setShowPreview(false);
+              }}
+              disabled={isProvider}
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
+            >
+              <option value="revenue">Doanh Thu</option>
+              <option value="inventory">Ton Kho</option>
+              <option value="top_selling">Ban Chay</option>
+              <option value="profitability">Loi Nhuan</option>
+              <option value="invoice_history">Lich Su Hoa Don</option>
+            </select>
+            {isProvider && (
+              <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                Provider chi xem duoc report ton kho.
+              </p>
+            )}
+          </div>
+        </div>
+        <InvoiceHistoryWorkspace mode="report" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b dark:border-slate-800 pb-6 gap-4">
@@ -207,6 +251,7 @@ export default function ReportsPage() {
             <option value="inventory">Tồn Kho</option>
             <option value="top_selling">Bán Chạy</option>
             <option value="profitability">Lợi Nhuận</option>
+            <option value="invoice_history">Lich Su Hoa Don</option>
           </select>
           {isProvider && (
             <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-500">
