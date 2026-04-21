@@ -49,7 +49,7 @@ This document outlines the roadmap for the TechStore application.
 -   [x] **Smart Automation:** Automated business flow via `pg_cron` (Every 20 mins).
 -   [x] **Audit Logging:** `GhiChu` column for automated tracking of actors and dates.
 -   [x] **High-End UI:** Right-side collapsible sidebar + Mobile burger menu.
--   [x] **Dark Mode:** Deep Dark Mode (Slate-950) with CSS variable sync.
+-   [x] **Theme Policy:** Light theme is default in deployment; dark-mode toggle is disabled.
 -   [x] **Accessibility:** Info Icons (i) for business logic explanation + Password Toggle.
 -   [x] **Security:** Robust Auth Triggers with search_path safety.
 -   [x] **Identity:** Nearest Superior display in Profile (Staff -> Retailer -> Admin).

@@ -1,73 +1,127 @@
-# TechStore: Hướng dẫn dành cho Business Analyst (BA)
+# TechStore - Business Analyst Guide
 
-Tài liệu này giải thích các vai trò, quy trình nghiệp vụ và các thực thể dữ liệu trong hệ thống Quản lý Kho TechStore.
+Tài liệu này mô tả nghiệp vụ đang chạy trên live deployment, đối chiếu trực tiếp với source code frontend + migration SQL hiện có.
 
-## 1. Vai trò và Quyền hạn (RBAC)
+## 1) Vai trò và phạm vi truy cập (RBAC)
 
-Hệ thống được thiết kế với 4 vai trò chính, mỗi vai trò có phạm vi truy cập dữ liệu và chức năng khác nhau:
+| Vai trò | Quyền chính | Giới hạn chính |
+|---|---|---|
+| Admin | Toàn quyền cấu hình, phân quyền site, điều phối nhân sự, xem báo cáo/toàn hệ thống | Không giới hạn phạm vi dữ liệu |
+| Provider (Supplier user) | Điều phối chuyển kho từ kho nguồn (stock warehouse), nhận/chấp nhận chuyển kho theo quyền link | Không tạo hóa đơn bán lẻ |
+| Retailer | Vận hành kho bán lẻ, tạo hóa đơn, nhận hàng từ luồng chuyển kho | Không điều phối kho nguồn ngoài rule link |
+| Staff | Tác nghiệp bán hàng trong phạm vi được cấp, xem dữ liệu theo RLS | Không điều phối nhân sự, không điều phối kho cấp cao |
 
-| Vai trò | Chức năng chính | Hạn chế |
-| :--- | :--- | :--- |
-| **Admin** | Toàn quyền quản trị hệ thống, cấu hình kho và nhân viên. | Không có. |
-| **Provider** | Nhập hàng từ NCC ngoại tỉnh, điều phối chuyển kho cho chi nhánh. | Không được phép tạo hóa đơn bán lẻ trực tiếp. |
-| **Retailer** | Quản lý chi nhánh, tạo hóa đơn bán lẻ, nhận hàng từ kho tổng. | Không được phép nhập hàng trực tiếp từ NCC bên ngoài. |
-| **Staff** | Xem danh mục sản phẩm, báo cáo cơ bản và tồn kho. | Không có quyền thực hiện các giao dịch làm thay đổi số lượng kho. |
+Ghi chú:
+- `NHA_CUNG_CAP` là supplier master (danh mục đối tác).
+- `Provider` là user role vận hành trong `NHAN_VIEN` (không đồng nhất với record master trong `NHA_CUNG_CAP`).
 
-## 1.1 Phân biệt thực thể nghiệp vụ
+## 2) Mô hình dữ liệu nghiệp vụ cốt lõi
 
-- **Khu vực (`KHU_VUC`)**: Miền logic (ví dụ `MB`, `MN`, `MT`). Mỗi khu vực có thể có **nhiều kho**.
-- **Kho (`KHO`)**: Điểm chứa/luân chuyển hàng vật lý và tồn kho.
-- **Loại kho (`WarehouseType`)**:
-  - `stock_warehouse`: Kho chứa/trung tâm điều phối.
-  - `retail_warehouse`: Kho bán lẻ/chi nhánh.
-- **Supplier master (`NHA_CUNG_CAP`)**: Danh mục đối tác NCC theo khu vực, dùng cho chính sách link và nhập hàng.
-- **Supplier user (`NHAN_VIEN.role = Provider`)**: Người dùng nội bộ vận hành kho nguồn.
-- **Retailer user (`NHAN_VIEN.role = Retailer`)**: Người dùng nội bộ vận hành kho bán lẻ.
+### 2.1 Identity và hồ sơ người dùng
+- `auth.users` là nguồn identity đăng nhập.
+- `public.NHAN_VIEN` là profile nghiệp vụ (mã nhân sự, role, kho, trạng thái).
+- Trigger/profile-sync tạo hoặc đồng bộ profile từ metadata đăng ký.
 
-## 2. Mô hình Quản lý Thác nước (Waterfall Management)
+### 2.2 Khu vực và kho
+- Hiện tại **không có bảng `KHU_VUC` riêng**; khu vực được thể hiện qua `KHO.KhuVuc` (ví dụ: `MB`, `MT`, `MN`).
+- `KHO.WarehouseType` có 2 loại:
+  - `stock_warehouse`: kho nguồn/trung tâm điều phối.
+  - `retail_warehouse`: kho bán lẻ/điểm nhận hàng của retailer.
+- Một khu vực có thể có nhiều kho; mỗi kho thuộc đúng 1 khu vực.
 
-Để đảm bảo tính kỷ luật và phân cấp, hệ thống áp dụng mô hình quản lý gián tiếp:
-- **Cấp Admin:** Chỉ quản lý và điều chỉnh chức vụ cho các vai trò trung cấp (`Provider`, `Retailer`). Admin thiết lập cấu hình hệ thống nhưng không can thiệp vào công việc chi tiết của nhân viên cấp thấp nhất.
-- **Cấp Chi Nhánh (Retailer):** Trực tiếp quản lý và chịu trách nhiệm về đội ngũ nhân viên (`Staff`) tại kho của mình. Retailer có quyền thay đổi trạng thái hoạt động (cho nghỉ việc) của nhân viên cấp dưới.
-- **Tính năng Tự phục vụ:** Mọi nhân viên đều có quyền tự cập nhật thông tin cá nhân (Họ tên, Ngày sinh) trong trang Hồ sơ cá nhân.
+### 2.3 Bảng link nghiệp vụ
+- `RETAILER_SUPPLIER_LINK`: liên kết retailer <-> supplier master (mặc định cùng khu vực, có thể mở rộng cross-site).
+- `PROVIDER_WAREHOUSE_LINK`: kho mà provider được phép quản lý/chuyển đi (auto-sync theo khu vực, có thể thêm manual link).
 
-## 3. Quy trình Chuyển kho (Inventory Transfer)
+## 3) Quy trình chuyển kho (2-phase, actor-aware)
 
-Đây là quy trình 2 bước, actor-aware:
-1. **Giai đoạn Gửi (Initiate):**
-   - `Provider` (hoặc `Admin`) chọn:
-     - Sản phẩm.
-     - **Kho nguồn** mà supplier đang quản lý (bắt buộc là `stock_warehouse`).
-     - **Actor nhận** (`Provider` hoặc `Retailer`).
-   - **Kho đích** tự động lấy theo kho mà actor nhận đang quản lý.
-   - Hệ thống tự kiểm tra:
-     - Kho nguồn khác kho đích.
-     - Actor nhận có đúng vai trò và đúng kho đích.
-     - Rule cùng khu vực hoặc cross-site được link bởi admin.
-   - Tồn kho chưa thay đổi ở trạng thái `PENDING`.
-2. **Giai đoạn Nhận (Accept/Decline):**
-   - Actor nhận (có thể là `Provider` hoặc `Retailer`) xử lý pending.
-   - Nếu **Accept**:
-     - Tồn kho nguồn giảm, tồn kho đích tăng trong cùng transaction.
-     - Lưu snapshot lịch sử: tồn trước, số lượng chuyển, tồn sau.
-   - Nếu **Decline**:
-     - Yêu cầu đóng với lý do từ chối.
-     - Tồn kho không đổi.
+### 3.1 Tạo yêu cầu (Initiate)
+- Người gửi: `Provider` (hoặc `Admin` trong một số luồng quản trị).
+- Chọn:
+  1. Sản phẩm.
+  2. Kho nguồn (`stock_warehouse`) mà provider có quyền quản lý.
+  3. Actor nhận (`Provider` hoặc `Retailer`).
+- Hệ thống tự xác định kho đích theo actor nhận và validate:
+  - Kho nguồn khác kho đích.
+  - Actor nhận hợp lệ với loại kho đích.
+  - Cùng khu vực hoặc có link cross-site hợp lệ.
+- Tạo record `STOCK_TRANSFER` trạng thái `PENDING`.
 
-### 3.1 Quy tắc link theo khu vực và cross-site
+### 3.2 Xử lý yêu cầu (Accept/Decline)
+- Actor nhận vào màn hình pending để `CONFIRMED` hoặc `DECLINED`.
+- Nếu `CONFIRMED`:
+  - Trừ tồn kho nguồn, cộng tồn kho đích trong cùng transaction.
+  - Lưu snapshot tồn kho: `from_qty_before`, `to_qty_before`, `from_qty_after`, `to_qty_after`.
+- Nếu `DECLINED`:
+  - Ghi reason/reason_detail.
+  - Không đổi tồn kho.
 
-- Mặc định, link `Retailer-Supplier` được thiết lập trong cùng khu vực.
-- `Admin` có thể mở rộng link cross-site cho nhu cầu liên vùng.
-- `Provider` mặc định quản lý các kho trong khu vực của mình; có thể mở rộng thủ công (manual link) để phục vụ liên vùng.
+## 4) Quy trình hóa đơn
 
-## 4. Quản lý Nhân sự & Trạng thái Nghỉ việc
+### 4.1 Hóa đơn thủ công
+- Dùng RPC `create_invoice`.
+- Có kiểm tra role/trạng thái nhân sự và quyền theo RLS.
+- Ghi dữ liệu vào `HOA_DON` + `CT_HOA_DON`, đồng thời trừ tồn kho.
 
-- **Liên kết tài khoản:** Khi người dùng đăng ký trên UI, hệ thống tự động tạo một profile tương ứng trong bảng `NHAN_VIEN` thông qua Database Trigger.
-- **Nhân viên nghỉ việc (Resigned):** 
-    - Khi một nhân viên được đánh dấu là `Resigned` trong DB, họ vẫn có thể đăng nhập để xem lịch sử nhưng **bị chặn** thực hiện mọi hành động tạo dữ liệu mới (Hóa đơn, Chuyển kho).
-    - UI sẽ hiển thị nhãn đỏ để thông báo trạng thái này.
+### 4.2 Hóa đơn tự động (pg_cron)
+- Job chính: `techstore-main-flow` (chu kỳ `*/20 * * * *`).
+- Function: `public.run_automated_business_flow()`.
+- Logic hiện tại:
+  - Chọn ngẫu nhiên khu vực có actor active.
+  - Sinh transfer attempts cân bằng với tỉ lệ confirm/decline mô phỏng 80/20.
+  - Xử lý pending transfer.
+  - Tạo 1 hóa đơn auto mỗi lượt chạy.
+- Format note hóa đơn auto chuẩn mới:
+  - `Hóa đơn [DD/MM HH24:MI] bởi <HoTen> (<MaNV>)`
+  - Ví dụ: `Hóa đơn [21/04 02:00] bởi CuocDoi TrongGai (NV-B00307)`.
 
-## 5. Báo cáo & Dashboard
+## 5) Báo cáo và lịch sử hóa đơn
 
-- **Dashboard:** Cung cấp số liệu thời gian thực về Doanh thu ngày, Đơn hàng mới, Tổng tồn kho toàn hệ thống và Top 3 sản phẩm bán chạy.
-- **Profitability Report:** Báo cáo thông minh tính toán lợi nhuận bằng cách đối soát giá bán trên Hóa đơn với giá nhập trung bình từ các Phiếu nhập hàng.
+### 5.1 Report module
+- Reports chuẩn: doanh thu, tồn kho, top bán chạy, lợi nhuận.
+- Có export PDF/Excel.
+- Provider bị giới hạn chỉ xem report tồn kho.
+
+### 5.2 Invoice History Workspace (trang riêng + report mode)
+- Vai trò truy cập: `Admin`, `Retailer`, `Staff`.
+- Rule dữ liệu:
+  - Admin: xem toàn hệ thống.
+  - Retailer: xem tất cả hóa đơn trong khu vực của retailer.
+  - Staff: chỉ xem hóa đơn do chính staff tạo.
+- Bộ lọc nâng cao: ngày, khu vực, kho, người tạo, keyword, min/max tổng tiền, sort, chỉ hóa đơn auto, export CSV.
+
+## 6) Điều phối nhân sự
+
+### 6.1 Quản lý cấp dưới trực tiếp
+- Admin: quản lý Provider/Retailer/Staff theo phân cấp.
+- Retailer: quản lý Staff cùng kho.
+- Chức năng chính:
+  - Promote/Demote (qua `hierarchy_control`).
+  - Sa thải/Kích hoạt lại cấp dưới trực tiếp (qua `manage_employee`).
+
+### 6.2 Deactivate theo cơ chế notice
+- Nhân sự cấp dưới không tự nghỉ việc ngay.
+- Họ gửi notice bằng trạng thái `PendingResign`.
+- Cấp trên xử lý ở section `Pending / Yêu cầu từ cấp dưới`:
+  - Duyệt -> `Resigned`.
+  - Từ chối -> trả về `Active`.
+
+## 7) Cross-check TODO (mục Improvements)
+
+Đối chiếu với code/migration hiện tại:
+- Smart automation (`pg_cron`) đã triển khai.
+- Audit note cho hóa đơn/chuyển kho đã triển khai; note auto invoice đã chuẩn hóa format business-friendly.
+- Invoice history theo vai trò + report mode nâng cao đã triển khai.
+- Luồng cấp trên sa thải cấp dưới trực tiếp + cấp dưới gửi notice deactivate đã triển khai.
+- Mô hình kho `stock_warehouse`/`retail_warehouse` + link cùng khu vực/cross-site đã triển khai.
+- Theme: hệ thống đang chạy mặc định light, nút dark mode đã tắt theo quyết định vận hành.
+
+## 8) Mức độ đủ cho agent dựng diagram
+
+Tài liệu này (kèm migration trong `supabase/migrations`) đã đủ để agent khác dựng:
+- Use-case diagram (RBAC theo vai trò).
+- Sequence diagram cho 4 luồng chính: tạo hóa đơn, chuyển kho 2-phase, duyệt pending chuyển kho, quy trình notice nghỉ việc.
+- ERD logic (identity-profile, warehouse topology, transfer/invoice flows, permission links).
+
+Khuyến nghị cho diagram chi tiết kỹ thuật:
+- Dùng thêm function signatures trong migration để thể hiện rõ pre-condition/validation ở mức SQL.

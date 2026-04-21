@@ -83,6 +83,16 @@ const csvEscape = (value: string | number) => {
   return text;
 };
 
+const isAutoInvoice = (item: InvoiceRecord) => {
+  const note = item.ghiChu.toLowerCase();
+  return (
+    item.maHD.startsWith('AT-') ||
+    note.includes('auto') ||
+    note.startsWith('hoa don [') ||
+    note.startsWith('hóa đơn [')
+  );
+};
+
 export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistoryWorkspaceProps) {
   const [profile, setProfile] = useState<RoleProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -255,7 +265,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
       if (regionFilter !== 'ALL' && item.region !== regionFilter) return false;
       if (warehouseFilter !== 'ALL' && item.maKho !== warehouseFilter) return false;
       if (employeeFilter !== 'ALL' && item.maNV !== employeeFilter) return false;
-      if (onlyAuto && !item.ghiChu.toLowerCase().includes('auto')) return false;
+      if (onlyAuto && !isAutoInvoice(item)) return false;
       if (min !== null && Number.isFinite(min) && item.tongTien < min) return false;
       if (max !== null && Number.isFinite(max) && item.tongTien > max) return false;
       if (!keywordLower) return true;
@@ -556,7 +566,7 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
                       {item.ghiChu ? (
                         <span
                           className={`px-2 py-1 rounded-lg border ${
-                            item.ghiChu.toLowerCase().includes('auto')
+                            isAutoInvoice(item)
                               ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-900/40'
                               : 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800'
                           }`}
@@ -577,4 +587,3 @@ export default function InvoiceHistoryWorkspace({ mode = 'page' }: InvoiceHistor
     </div>
   );
 }
-
