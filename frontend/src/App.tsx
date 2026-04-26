@@ -15,6 +15,7 @@ import ManagementPage from './pages/ManagementPage';
 import WarehouseSettingsPage from './pages/WarehouseSettingsPage';
 import SitePermissionsPage from './pages/SitePermissionsPage';
 import InvoiceHistoryPage from './pages/InvoiceHistoryPage';
+import ProductInventoryPage from './pages/ProductInventoryPage';
 import './App.css';
 
 const SidebarLink = ({
@@ -315,6 +316,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:maSP/inventory" element={<ProductInventoryPage />} />
             <Route path="/suppliers" element={<SuppliersPage />} />
             <Route path="/create-invoice" element={<CreateInvoicePage />} />
             <Route path="/inventory-transfer" element={<InventoryTransferPage />} />
