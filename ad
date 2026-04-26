@@ -1,0 +1,239 @@
+[33mcommit 891b401a86809b3e333b0bbe0d8e84593488ae7c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Thu Apr 9 16:29:44 2026 +0700
+
+    docs: finalize roadmap and implement definitive automated flow with short IDs
+
+[33mcommit 24e02f8d1ab9548e6c1a119dece7429553343e3f[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Thu Apr 9 13:48:38 2026 +0700
+
+    feat: definitively seed production data and launch automated business flow
+
+[33mcommit a47e3a59d91acaed188494521c8922abd115eff8[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Thu Apr 9 13:07:16 2026 +0700
+
+    feat: implement smart automated business flow with pg_cron and audit logging
+
+[33mcommit 83decbaa825fd4e19ab32ee1573e1e83e929dcc4[m
+Author: Nhat Hoang Minh <56759973+potatomat0@users.noreply.github.com>
+Date:   Sat Apr 4 18:00:31 2026 +0700
+
+    feat: align transfer topology and frontend QoL for provider workflows
+
+[33mcommit 6df355535021041750f753f4bc8e6389f29faa78[m
+Author: Nhat Hoang Minh <56759973+potatomat0@users.noreply.github.com>
+Date:   Sat Apr 4 16:26:54 2026 +0700
+
+    feat: sync db hierarchy/report fixes and management UI workflow
+
+[33mcommit f7caeabd1f95c8c6f7fbdbe195bd7be4da921b88[m
+Author: Nhat Hoang Minh <56759973+potatomat0@users.noreply.github.com>
+Date:   Sat Apr 4 15:52:15 2026 +0700
+
+    new UI fix
+
+[33mcommit 0643daaa3ed13802ffbe7927dfbbcc9c7dfffc3e[m
+Author: Nhat Hoang Minh <56759973+potatomat0@users.noreply.github.com>
+Date:   Sat Apr 4 14:53:34 2026 +0700
+
+    schema fix for auth and public
+
+[33mcommit aa31e0dc66a01f325d1832910d38c07c7c81522b[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 20:31:53 2026 +0700
+
+    feat: implement strict site-based RBAC, nearest superiors logic, and age validation
+
+[33mcommit 8ee8abcd07d01e97ddecc07b5822189b2b6dd8f8[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 20:14:10 2026 +0700
+
+    feat: implement right-side sidebar, full product CRUD, waterfall hierarchy UI, and advanced report exports
+
+[33mcommit 9f6422ff70abb109741a5c9e135665ea97d040d6[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:59:21 2026 +0700
+
+    fix: implement robust auth trigger with search_path and force-sync legacy users
+
+[33mcommit 9a430494831eb99a10c6cab5b941778cf821ca70[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:40:11 2026 +0700
+
+    feat: implement waterfall management model, profile editing, and warehouse configuration
+
+[33mcommit e1b1f6cff43f8d21cdba5519a24d7bf57265eff6[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:31:41 2026 +0700
+
+    fix: resolve auth linking issues and backfill missing employee profiles
+
+[33mcommit 03f9a77734c6fbbf3513d9f5ce54fc78c4660f78[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:14:28 2026 +0700
+
+    fix: resolve 406 error, integrate FontAwesome, and upgrade Dark Mode to hắc ám level
+
+[33mcommit cd19cc59cd99dbe2eb9de77b11943dc05b80911d[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:08:26 2026 +0700
+
+    feat: implement smart cron seeding, dark mode, info tooltips, and accessibility enhancements
+
+[33mcommit c06d504b84d11b4f66e1bc1679bc5a6e57ce6d90[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 19:03:06 2026 +0700
+
+    fix: allow anon access to KHO for registration and update dropdown logic
+
+[33mcommit 27ad601f13c2f6bbc186c9881ad4f0603b5cbf97[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 18:53:27 2026 +0700
+
+    feat: add definitive core seeding for KHO, NCC, SP, and NV
+
+[33mcommit 6cbc9a5e70181758e86e3e32d8d85958763f7501[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Mar 28 18:35:07 2026 +0700
+
+    feat: finalize seeding, RBAC logic, resigned employee handling, and BA documentation
+
+[33mcommit 6c1f6d01308bf28a1e2ca17d1eb506d2dd0e69a0[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Wed Mar 25 18:07:43 2026 +0700
+
+    data seeding migration, schema change (remove sanPham)
+
+[33mcommit 65c739b625c8b90603bfa47adf653d11c92f8ec1[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 21:42:11 2026 +0700
+
+    feat(db): seed sample data for dashboard, profitability, and transfers
+
+[33mcommit d9a846e9c66f87aee453f6699e9be02731478e35[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 21:29:50 2026 +0700
+
+    feat(dashboard): implement homepage dashboard with key metrics
+
+[33mcommit e61a82f7bb93b4014a0638b4200fbfd006308990[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 21:22:21 2026 +0700
+
+    feat(rbac): implement multi-role auth and two-step inventory transfer workflow
+
+[33mcommit 760151400c2157a72c75cc39e8c97858f4b00904[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 21:14:24 2026 +0700
+
+    feat(reports): implement advanced profitability report RPC and UI
+
+[33mcommit 28d2112d03b6beac4731ba5a0696000ee1c4de58[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 21:10:16 2026 +0700
+
+    feat(i18n): implement internationalization with language switcher (VI/EN)
+
+[33mcommit 136486064b432eb4f65b0341bfb6f3c2f93144a3[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 20:59:59 2026 +0700
+
+    feat(invoice): implement CreateInvoicePage UI and routing
+
+[33mcommit 4db96664412cb845cac50c1414296c2ba985cc78[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 20:59:04 2026 +0700
+
+    docs: add mandatory type checking and coding standards to convention
+
+[33mcommit ef5f64dbe229d1a06722fd70d6b7628f8c417cee[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 20:58:58 2026 +0700
+
+    feat(db): implement create_invoice RPC for atomic transactions
+
+[33mcommit 245189df461eff70c47e0e764c8b70708986bc9a[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Fri Mar 20 20:58:53 2026 +0700
+
+    feat(auth): implement login/registration and database RLS with auto-profile trigger
+
+[33mcommit e5c9440e1404d7578d4915b705a914e8c8a78f1a[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Wed Feb 4 17:38:43 2026 +0700
+
+    docs: add project roadmap, C4 diagram, and new workflow
+
+[33mcommit adbe4f71fd76621ed12c97a45c8765019b286bf5[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 21:37:33 2026 +0700
+
+    tailwind css config fix
+
+[33mcommit 6de2c95024f8dacca268615915b24024c6f30207[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:58:25 2026 +0700
+
+    feat(frontend): implement top selling products report
+
+[33mcommit 6823c04d47ba0567c0d71cc8a18cb0a1dfcee216[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:54:48 2026 +0700
+
+    feat(frontend): implement nationwide inventory report
+
+[33mcommit 2a276c4c9a02daa18a3786424df3b5dfd362258c[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:50:51 2026 +0700
+
+    feat(frontend): implement revenue by region report
+
+[33mcommit 5e1900486ba4a8861b90840fd29875a60d3dd42c[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:46:23 2026 +0700
+
+    feat(frontend): implement suppliers page
+
+[33mcommit fc4dc40547f04e53f9e86d3b9adebed7d2b1e70d[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:44:39 2026 +0700
+
+    feat(frontend): implement routing and component structure
+
+[33mcommit 168f98d68b35ef00b9ff62562222c14fb48aebb5[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:41:55 2026 +0700
+
+    feat(frontend): implement basic layout and product table
+
+[33mcommit dbbcb65b9082669a520d2a56553831bb79ede22f[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:39:03 2026 +0700
+
+    feat(frontend): initial setup and product list component
+
+[33mcommit ff4597c555c288429d4d0a05550d6c79eab767d4[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:22:17 2026 +0700
+
+    docs: update architecture to use Supabase auto-generated API
+
+[33mcommit b6e62e17bac13b8be8148f70e9d48589c6e59d04[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:21:20 2026 +0700
+
+    refactor: remove custom backend in favor of Supabase API
+
+[33mcommit c47645ac982abd1c7f29c74927ec40d6966cde7e[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 20:03:16 2026 +0700
+
+    feat(backend): implement CRUD APIs for all tables
+
+[33mcommit 7df01410f91c4d7737f60a81d86e3dc01031211e[m
+Author: 016tandu <vuh611367@gmail.com>
+Date:   Sat Jan 31 19:55:14 2026 +0700
+
+    feat(backend): implement initial server and product API
