@@ -1,0 +1,28 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#134e4a,stroke:#134e4a,color:#ffffff,stroke-width:2px;
+    classDef action fill:#ccfbf1,stroke:#14b8a6,color:#134e4a,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px;
+    classDef fail fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu chuyển kho]):::startend --> A[Supplier chọn kho nguồn, actor nhận, kho đích, SP, số lượng]:::action
+    A --> B[RPC initiate_transfer]:::action
+    B --> C{Validate quyền + link + loại kho hợp lệ?}:::decision
+    C -->|Không| X[Từ chối tạo yêu cầu]:::fail
+    C -->|Có| D[Tạo STOCK_TRANSFER trạng thái PENDING]:::action
+
+    D --> E[Actor nhận mở danh sách pending]:::action
+    E --> F{Confirm hay Decline?}:::decision
+
+    F -->|Confirm| G[RPC respond_to_transfer]:::action
+    G --> H{Đủ tồn kho nguồn tại thời điểm duyệt?}:::decision
+    H -->|Không| Y[Auto decline do thiếu tồn kho]:::fail
+    H -->|Có| I[Trừ kho nguồn + cộng kho đích]:::action
+    I --> J[Lưu snapshot trước/sau + CONFIRMED]:::action
+
+    F -->|Decline| K[Lưu lý do từ chối + DECLINED]:::action
+
+    X --> Z([Kết thúc]):::startend
+    Y --> Z
+    J --> Z
+    K --> Z

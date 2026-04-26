@@ -1,0 +1,25 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#ecfdf5', 'primaryBorderColor': '#047857', 'lineColor': '#334155'}}}%%
+sequenceDiagram
+    autonumber
+    actor U as Retailer/Staff hợp lệ
+    participant FE as CreateInvoicePage
+    participant RPC as RPC create_invoice
+    participant DB as HOA_DON + CT_HOA_DON + TON_KHO
+
+    U->>FE: Chọn kho, sản phẩm, số lượng
+    FE->>RPC: rpc(create_invoice, ma_nv, ma_kho, items)
+    RPC->>RPC: Validate role + trạng thái nhân sự + phạm vi kho
+    RPC->>DB: Kiểm tra tồn kho từng sản phẩm
+    alt Đủ tồn kho
+        RPC->>DB: Insert HOA_DON
+        loop Mỗi dòng sản phẩm
+            RPC->>DB: Insert CT_HOA_DON
+            RPC->>DB: Update TON_KHO trừ số lượng
+        end
+        DB-->>RPC: Commit transaction
+        RPC-->>FE: Trả mã hóa đơn
+        FE-->>U: Thông báo tạo hóa đơn thành công
+    else Thiếu tồn kho hoặc sai quyền
+        RPC-->>FE: Trả lỗi nghiệp vụ
+        FE-->>U: Hiển thị lỗi chi tiết
+    end

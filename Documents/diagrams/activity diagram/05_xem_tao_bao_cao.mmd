@@ -1,0 +1,31 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#164e63,stroke:#164e63,color:#ffffff,stroke-width:2px;
+    classDef action fill:#cffafe,stroke:#0891b2,color:#083344,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px;
+    classDef deny fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu báo cáo]):::startend --> A[Người dùng chọn loại báo cáo + bộ lọc]:::action
+    A --> B{Loại báo cáo}:::decision
+
+    B -->|Doanh thu| C[RPC doanh_thu_vung]:::action
+    B -->|Tồn kho| D[RPC ton_kho_toan_quoc]:::action
+    B -->|Top bán chạy| E[RPC top_selling_products]:::action
+    B -->|Lợi nhuận| F[RPC calculate_profitability]:::action
+    B -->|Lịch sử hóa đơn| G[Query invoice history theo filter nâng cao]:::action
+
+    C --> H{Vai trò được phép?}:::decision
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+
+    H -->|Không| X[Chặn truy cập theo role policy]:::deny
+    H -->|Có| I[Render kết quả bảng/biểu đồ]:::action
+    I --> J{Người dùng có export?}:::decision
+    J -->|Có| K[Export CSV/PDF/Excel]:::action
+    J -->|Không| L[Giữ dữ liệu trên màn hình]:::action
+
+    X --> Z([Kết thúc]):::startend
+    K --> Z
+    L --> Z

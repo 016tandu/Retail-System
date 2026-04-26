@@ -1,0 +1,22 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#f0fdfa,stroke:#0f766e,stroke-width:2px,color:#134e4a;
+    classDef usecase fill:#ccfbf1,stroke:#14b8a6,stroke-width:2px,color:#134e4a;
+    classDef validate fill:#e0e7ff,stroke:#3730a3,stroke-width:2px,color:#312e81;
+    classDef endstate fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d;
+
+    S[Supplier gửi]:::actor
+    R[Supplier/Retailer nhận]:::actor
+
+    U1([Tạo yêu cầu chuyển kho]):::usecase
+    U2([Validate quyền, link site, loại kho]):::validate
+    U3([Tạo bản ghi PENDING]):::usecase
+    U4([Xem pending nhận hàng]):::usecase
+    U5([Confirm chuyển kho]):::usecase
+    U6([Decline chuyển kho]):::usecase
+    U7([Cập nhật tồn kho + snapshot trước/sau]):::usecase
+    U8([Đóng yêu cầu DECLINED + lý do]):::endstate
+
+    S --> U1 --> U2 --> U3
+    R --> U4 --> U5 --> U7
+    R --> U4 --> U6 --> U8

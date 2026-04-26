@@ -1,0 +1,36 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#7c2d12,stroke:#7c2d12,color:#ffffff,stroke-width:2px;
+    classDef action fill:#ffedd5,stroke:#ea580c,color:#7c2d12,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#a16207,color:#78350f,stroke-width:2px;
+    classDef fail fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu CRUD tồn kho]):::startend --> A[Chọn Create/Read/Update/Delete]:::action
+    A --> B{Loại thao tác}:::decision
+
+    B -->|Create| C[Kiểm tra cặp MaKho + MaSP chưa tồn tại]:::action
+    C --> C1{Hợp lệ?}:::decision
+    C1 -->|Không| X[Lỗi trùng khóa hoặc thiếu dữ liệu]:::fail
+    C1 -->|Có| C2[Insert dòng TON_KHO]:::action
+
+    B -->|Read| D[Select tồn kho theo bộ lọc]:::action
+
+    B -->|Update| E[Kiểm tra bản ghi cần cập nhật]:::action
+    E --> E1{Tồn tại?}:::decision
+    E1 -->|Không| Y[Lỗi không tìm thấy bản ghi]:::fail
+    E1 -->|Có| E2[Update SoLuongTon/LastUpdated]:::action
+
+    B -->|Delete| F[Kiểm tra bản ghi cần xóa]:::action
+    F --> F1{Được phép xóa?}:::decision
+    F1 -->|Không| Z1[Lỗi ràng buộc nghiệp vụ]:::fail
+    F1 -->|Có| F2[Delete dòng TON_KHO]:::action
+
+    C2 --> G[Trả kết quả cho UI]:::action
+    D --> G
+    E2 --> G
+    F2 --> G
+    X --> G
+    Y --> G
+    Z1 --> G
+
+    G --> H([Kết thúc]):::startend

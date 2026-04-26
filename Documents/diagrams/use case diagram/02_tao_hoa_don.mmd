@@ -1,0 +1,33 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#713f12;
+    classDef usecase fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#14532d;
+    classDef ext fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#082f49;
+    classDef fail fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+
+    U[Retailer/Staff hợp lệ]:::actor
+    SYS[[Hệ thống Hóa đơn]]
+
+    UC1([Nhập thông tin hóa đơn]):::usecase
+    UC2([Kiểm tra quyền và trạng thái nhân sự]):::ext
+    UC3([Kiểm tra tồn kho]):::ext
+    UC4([Lưu hóa đơn + chi tiết]):::usecase
+    UC5([Trừ tồn kho theo transaction]):::usecase
+    UC6([Xuất mã hóa đơn thành công]):::usecase
+    UC7([Thông báo lỗi nghiệp vụ]):::fail
+
+    U --> UC1 --> UC4 --> UC5 --> UC6
+    UC4 -.include.-> UC2
+    UC4 -.include.-> UC3
+    UC3 -.không đạt.-> UC7
+    UC2 -.không đạt.-> UC7
+
+    subgraph SYS
+        UC1
+        UC2
+        UC3
+        UC4
+        UC5
+        UC6
+        UC7
+    end

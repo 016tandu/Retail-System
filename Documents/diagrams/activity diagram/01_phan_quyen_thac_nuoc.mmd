@@ -1,0 +1,26 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:2px;
+    classDef action fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px;
+    classDef deny fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu]):::startend --> A[Người dùng đăng nhập]:::action
+    A --> B[Tải profile vai trò + cấp quản lý]:::action
+    B --> C{Vai trò là gì?}:::decision
+
+    C -->|Admin| D[Cho phép toàn quyền quản trị]:::action
+    C -->|Supplier/Provider| E[Cho phép điều phối kho theo link]:::action
+    C -->|Retailer| F[Cho phép quản lý staff cùng phạm vi]:::action
+    C -->|Staff| G[Giới hạn thao tác tác nghiệp]:::action
+
+    D --> H{Thao tác có vượt rule?}:::decision
+    E --> H
+    F --> H
+    G --> H
+
+    H -->|Không| I[Thực thi query/RPC]:::action
+    H -->|Có| J[Trả lỗi không đủ quyền]:::deny
+
+    I --> K([Kết thúc]):::startend
+    J --> K

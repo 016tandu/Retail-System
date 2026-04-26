@@ -1,0 +1,20 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#14532d,stroke:#14532d,color:#ffffff,stroke-width:2px;
+    classDef action fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px;
+    classDef fail fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu tạo hóa đơn]):::startend --> A[Nhập kho + sản phẩm + số lượng]:::action
+    A --> B[Gọi RPC create_invoice]:::action
+    B --> C{Vai trò/trạng thái hợp lệ?}:::decision
+    C -->|Không| X[Trả lỗi phân quyền/trạng thái]:::fail
+    C -->|Có| D{Đủ tồn kho tất cả sản phẩm?}:::decision
+    D -->|Không| Y[Trả lỗi thiếu tồn kho]:::fail
+    D -->|Có| E[Insert HOA_DON]:::action
+    E --> F[Insert CT_HOA_DON]:::action
+    F --> G[Update TON_KHO giảm số lượng]:::action
+    G --> H[Commit transaction + trả mã hóa đơn]:::action
+    H --> Z([Kết thúc thành công]):::startend
+    X --> Z
+    Y --> Z

@@ -1,0 +1,41 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#f1f5f9,stroke:#0f172a,stroke-width:2px,color:#0f172a;
+    classDef usecase fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a;
+    classDef guard fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d;
+
+    A[Admin]:::actor
+    P[Supplier/Provider]:::actor
+    R[Retailer]:::actor
+    S[Staff]:::actor
+
+    UC1([Quản trị toàn hệ thống]):::usecase
+    UC2([Điều phối nhân sự cấp dưới]):::usecase
+    UC3([Điều phối chuyển kho theo link]):::usecase
+    UC4([Tạo hóa đơn trong phạm vi cho phép]):::usecase
+    UC5([Xem báo cáo theo vai trò]):::usecase
+    UC6([Truy cập dữ liệu theo RLS]):::usecase
+    G1([Chặn thao tác vượt quyền]):::guard
+
+    A --> UC1
+    A --> UC2
+    A --> UC3
+    A --> UC4
+    A --> UC5
+
+    P --> UC3
+    P --> UC5
+    P --> UC6
+
+    R --> UC2
+    R --> UC4
+    R --> UC5
+    R --> UC6
+
+    S --> UC4
+    S --> UC5
+    S --> UC6
+
+    UC2 -.validate.-> G1
+    UC3 -.validate.-> G1
+    UC4 -.validate.-> G1

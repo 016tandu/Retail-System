@@ -1,0 +1,130 @@
+﻿erDiagram
+    KHU_VUC {
+      varchar MaKhuVuc PK
+      varchar TenKhuVuc
+    }
+
+    KHO {
+      varchar MaKho PK
+      varchar TenKho
+      varchar KhuVuc FK
+      warehouse_type WarehouseType
+    }
+
+    SAN_PHAM {
+      varchar MaSP PK
+      text TenSP
+      text DonViTinh
+      numeric GiaNiemYet
+    }
+
+    NHA_CUNG_CAP {
+      varchar MaNCC PK
+      text TenNCC
+      varchar KhuVuc
+    }
+
+    NHAN_VIEN {
+      varchar MaNV PK
+      uuid user_id FK
+      text HoTen
+      varchar role
+      varchar MaKho FK
+      varchar TrangThai
+      date NgaySinh
+    }
+
+    HOA_DON {
+      varchar MaHD PK
+      date NgayLap
+      numeric TongTien
+      varchar MaNV FK
+      varchar MaKho FK
+      text GhiChu
+    }
+
+    CT_HOA_DON {
+      varchar MaHD FK
+      varchar MaSP FK
+      integer SoLuong
+      numeric DonGia
+      numeric ThanhTien
+    }
+
+    PHIEU_NHAP {
+      varchar MaPN PK
+      date NgayNhap
+      varchar MaNCC FK
+      varchar MaKho FK
+      numeric TongTienNhap
+    }
+
+    CT_PHIEU_NHAP {
+      varchar MaPN FK
+      varchar MaSP FK
+      integer SoLuong
+      numeric DonGiaNhap
+      numeric ThanhTien
+    }
+
+    TON_KHO {
+      varchar MaKho FK
+      varchar MaSP FK
+      integer SoLuongTon
+      timestamptz LastUpdated
+    }
+
+    STOCK_TRANSFER {
+      uuid id PK
+      varchar ma_sp FK
+      varchar from_kho FK
+      varchar to_kho FK
+      uuid sender_id FK
+      uuid receiver_id FK
+      transfer_status status
+      integer so_luong
+      integer from_qty_before
+      integer from_qty_after
+      integer to_qty_before
+      integer to_qty_after
+      timestamptz created_at
+    }
+
+    RETAILER_SUPPLIER_LINK {
+      uuid id PK
+      uuid retailer_user_id FK
+      varchar supplier_ma_ncc FK
+      timestamptz created_at
+    }
+
+    PROVIDER_WAREHOUSE_LINK {
+      uuid id PK
+      uuid provider_user_id FK
+      varchar ma_kho FK
+      bool is_manual
+      timestamptz created_at
+    }
+
+    KHU_VUC ||--o{ KHO : "phan_vung"
+    KHO ||--o{ NHAN_VIEN : "phan_cong"
+
+    NHAN_VIEN ||--o{ HOA_DON : "lap_hoa_don"
+    KHO ||--o{ HOA_DON : "phat_sinh_tai"
+
+    HOA_DON ||--o{ CT_HOA_DON : "chi_tiet"
+    SAN_PHAM ||--o{ CT_HOA_DON : "duoc_ban"
+
+    NHA_CUNG_CAP ||--o{ PHIEU_NHAP : "cung_cap"
+    KHO ||--o{ PHIEU_NHAP : "nhap_tai"
+    PHIEU_NHAP ||--o{ CT_PHIEU_NHAP : "chi_tiet_nhap"
+    SAN_PHAM ||--o{ CT_PHIEU_NHAP : "mat_hang_nhap"
+
+    KHO ||--o{ TON_KHO : "ton_theo_kho"
+    SAN_PHAM ||--o{ TON_KHO : "ton_theo_san_pham"
+
+    SAN_PHAM ||--o{ STOCK_TRANSFER : "mat_hang_chuyen"
+    KHO ||--o{ STOCK_TRANSFER : "kho_nguon"
+    KHO ||--o{ STOCK_TRANSFER : "kho_dich"
+
+    NHA_CUNG_CAP ||--o{ RETAILER_SUPPLIER_LINK : "lien_ket_supplier"
+    KHO ||--o{ PROVIDER_WAREHOUSE_LINK : "kho_quan_ly"

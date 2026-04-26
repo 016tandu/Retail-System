@@ -1,0 +1,31 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#f5f3ff', 'primaryBorderColor': '#6d28d9', 'lineColor': '#334155'}}}%%
+sequenceDiagram
+    autonumber
+    actor BOSS as Cấp trên trực tiếp
+    actor SUB as Cấp dưới
+    participant FE as ManagementPage
+    participant RPC as hierarchy_control / manage_employee
+    participant DB as NHAN_VIEN + auth.users
+
+    BOSS->>FE: Promote/Demote/Deactivate/Re-activate cấp dưới
+    FE->>RPC: Gọi RPC quản trị nhân sự
+    RPC->>DB: Validate quan hệ cấp trên-cấp dưới
+    alt Hợp lệ
+        RPC->>DB: Update role/trạng thái
+        DB-->>RPC: Thành công
+        RPC-->>FE: Success
+        FE-->>BOSS: Hiển thị kết quả
+    else Không hợp lệ
+        RPC-->>FE: Lỗi quyền hoặc sai flow
+        FE-->>BOSS: Chặn thao tác
+    end
+
+    SUB->>FE: Gửi notice nghỉ việc (PendingResign)
+    FE->>DB: update NHAN_VIEN.TrangThai = PendingResign
+    DB-->>FE: Lưu yêu cầu
+    FE-->>BOSS: Hiển thị tại mục Pending/Yêu cầu từ cấp dưới
+
+    BOSS->>FE: Duyệt/Từ chối pending resign
+    FE->>DB: Cập nhật Resigned hoặc Active
+    DB-->>FE: Thành công
+    FE-->>SUB: Đồng bộ trạng thái tài khoản

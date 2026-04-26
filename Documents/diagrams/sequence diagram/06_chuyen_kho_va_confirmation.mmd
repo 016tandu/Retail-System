@@ -1,0 +1,33 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#ecfeff', 'primaryBorderColor': '#0e7490', 'lineColor': '#334155'}}}%%
+sequenceDiagram
+    autonumber
+    actor S as Supplier gửi hàng
+    actor R as Supplier/Retailer nhận hàng
+    participant FE as InventoryTransferPage
+    participant RPC as initiate_transfer/respond_to_transfer
+    participant DB as STOCK_TRANSFER + TON_KHO
+
+    S->>FE: Chọn kho nguồn, actor nhận, kho đích, sản phẩm, số lượng
+    FE->>RPC: rpc(initiate_transfer)
+    RPC->>RPC: Validate quyền, link site, loại kho
+    RPC->>DB: Insert STOCK_TRANSFER(status=PENDING)
+    DB-->>FE: Trả transfer_id
+    FE-->>S: Tạo pending thành công
+
+    R->>FE: Mở danh sách pending cần xử lý
+    FE->>DB: Select STOCK_TRANSFER theo receiver_id
+    DB-->>FE: Danh sách pending
+
+    R->>FE: Chọn Confirm hoặc Decline
+    FE->>RPC: rpc(respond_to_transfer)
+    alt Confirm
+        RPC->>DB: Khóa dữ liệu + kiểm tra tồn kho nguồn
+        RPC->>DB: Trừ kho nguồn, cộng kho đích
+        RPC->>DB: Lưu snapshot before/after + status=CONFIRMED
+        DB-->>FE: Thành công
+        FE-->>R: Hiển thị xác nhận thành công
+    else Decline
+        RPC->>DB: Cập nhật status=DECLINED + lý do
+        DB-->>FE: Thành công
+        FE-->>R: Hiển thị đã từ chối
+    end

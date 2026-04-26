@@ -1,0 +1,27 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155'}}}%%
+flowchart TD
+    classDef startend fill:#4c1d95,stroke:#4c1d95,color:#ffffff,stroke-width:2px;
+    classDef action fill:#ddd6fe,stroke:#7c3aed,color:#4c1d95,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px;
+    classDef fail fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px;
+
+    S([Bắt đầu quản lý tài khoản]):::startend --> A{Ai thao tác?}:::decision
+
+    A -->|Cấp trên| B[Chọn tác vụ: tạo user/đổi role/sa thải]:::action
+    B --> C[RPC hierarchy_control hoặc manage_employee]:::action
+    C --> D{Có phải cấp dưới trực tiếp?}:::decision
+    D -->|Không| X[Từ chối do sai phân cấp]:::fail
+    D -->|Có| E[Update NHAN_VIEN/auth theo tác vụ]:::action
+    E --> R[Thông báo kết quả]:::action
+
+    A -->|Cấp dưới| F[Gửi notice nghỉ việc]:::action
+    F --> G[Set trạng thái PendingResign]:::action
+    G --> H[Hiển thị ở mục Pending của cấp trên]:::action
+    H --> I{Cấp trên duyệt?}:::decision
+    I -->|Duyệt| J[Set trạng thái Resigned]:::action
+    I -->|Từ chối| K[Set trạng thái Active]:::action
+    J --> R
+    K --> R
+
+    X --> R
+    R --> Z([Kết thúc]):::startend

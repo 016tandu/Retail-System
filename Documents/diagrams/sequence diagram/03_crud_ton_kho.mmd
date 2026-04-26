@@ -1,0 +1,34 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#fff7ed', 'primaryBorderColor': '#c2410c', 'lineColor': '#334155'}}}%%
+sequenceDiagram
+    autonumber
+    actor U as Admin/Provider
+    participant FE as Trang Tồn Kho (CRUD)
+    participant API as Supabase Native API
+    participant TK as Bảng TON_KHO
+
+    U->>FE: Chọn thao tác Create/Read/Update/Delete
+    alt Read
+        FE->>API: select(TON_KHO + join KHO + SAN_PHAM)
+        API->>TK: Query dữ liệu tồn kho
+        TK-->>API: Trả danh sách
+        API-->>FE: Data inventory
+        FE-->>U: Render bảng tồn kho
+    else Create
+        FE->>API: insert(TON_KHO)
+        API->>TK: Thêm dòng tồn kho mới
+        TK-->>API: Kết quả insert
+        API-->>FE: Success/Error
+        FE-->>U: Thông báo kết quả
+    else Update
+        FE->>API: update(TON_KHO.SoLuongTon/LastUpdated)
+        API->>TK: Cập nhật tồn kho
+        TK-->>API: Kết quả update
+        API-->>FE: Success/Error
+        FE-->>U: Thông báo kết quả
+    else Delete
+        FE->>API: delete(TON_KHO theo MaKho + MaSP)
+        API->>TK: Xóa dòng tồn kho
+        TK-->>API: Kết quả delete
+        API-->>FE: Success/Error
+        FE-->>U: Thông báo kết quả
+    end

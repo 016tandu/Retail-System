@@ -1,0 +1,42 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#e8f1ff', 'primaryBorderColor': '#1d4ed8', 'lineColor': '#334155', 'secondaryColor': '#f8fafc', 'tertiaryColor': '#ecfeff'}}}%%
+sequenceDiagram
+    autonumber
+    actor A as Admin
+    actor P as Supplier/Provider
+    actor R as Retailer
+    actor S as Staff
+    participant FE as Frontend
+    participant DB as Supabase RLS + RPC
+
+    rect rgb(236, 253, 245)
+    A->>FE: Mở trang Điều phối nhân sự
+    FE->>DB: rpc(hierarchy_control/manage_employee)
+    DB-->>FE: Kiểm tra vai trò, cấp trên trực tiếp
+    FE-->>A: Hiển thị danh sách user có thể quản lý
+    end
+
+    rect rgb(239, 246, 255)
+    P->>FE: Thực hiện tác vụ trong phạm vi supplier
+    FE->>DB: Query theo user_id + role + khu vực
+    DB-->>FE: Trả dữ liệu đã lọc theo thác nước
+    FE-->>P: Chỉ thấy cấp dưới trực tiếp
+    end
+
+    rect rgb(255, 251, 235)
+    R->>FE: Quản lý Staff cùng vùng/kho
+    FE->>DB: rpc(hierarchy_control)
+    alt Đúng phạm vi quyền
+        DB-->>FE: Cho phép thao tác
+        FE-->>R: Cập nhật thành công
+    else Vượt phạm vi
+        DB-->>FE: Lỗi "permission denied by business rule"
+        FE-->>R: Chặn thao tác
+    end
+    end
+
+    rect rgb(254, 242, 242)
+    S->>FE: Truy cập chức năng cấp cao
+    FE->>DB: Gọi query/RPC tương ứng
+    DB-->>FE: Từ chối theo RLS/RPC guard
+    FE-->>S: Hiển thị thông báo không đủ quyền
+    end

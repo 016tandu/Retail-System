@@ -1,0 +1,32 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#fff7ed,stroke:#c2410c,stroke-width:2px,color:#7c2d12;
+    classDef usecase fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12;
+    classDef support fill:#e2e8f0,stroke:#475569,stroke-width:2px,color:#0f172a;
+
+    U[Admin/Provider]:::actor
+    API[Supabase Native API]:::support
+
+    C([Create tồn kho]):::usecase
+    R([Read tồn kho]):::usecase
+    Uc([Update số lượng tồn]):::usecase
+    D([Delete dòng tồn kho]):::usecase
+    V([Validate khóa MaKho+MaSP]):::support
+    A([Ghi log/audit thay đổi]):::support
+
+    U --> C
+    U --> R
+    U --> Uc
+    U --> D
+
+    C -.call.-> API
+    R -.call.-> API
+    Uc -.call.-> API
+    D -.call.-> API
+
+    C -.include.-> V
+    Uc -.include.-> V
+    D -.include.-> V
+    C -.extend.-> A
+    Uc -.extend.-> A
+    D -.extend.-> A

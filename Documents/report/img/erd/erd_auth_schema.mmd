@@ -1,0 +1,89 @@
+﻿erDiagram
+    AUTH_USERS {
+      uuid id PK
+      text email
+      text role
+      jsonb raw_user_meta_data
+      timestamptz created_at
+      timestamptz last_sign_in_at
+    }
+
+    AUTH_SESSIONS {
+      uuid id PK
+      uuid user_id FK
+      timestamptz created_at
+      timestamptz updated_at
+      timestamptz not_after
+    }
+
+    AUTH_REFRESH_TOKENS {
+      bigint id PK
+      uuid session_id FK
+      text token
+      timestamptz created_at
+      timestamptz updated_at
+    }
+
+    AUTH_IDENTITIES {
+      uuid id PK
+      uuid user_id FK
+      text provider
+      jsonb identity_data
+      timestamptz created_at
+      timestamptz updated_at
+    }
+
+    AUTH_MFA_FACTORS {
+      uuid id PK
+      uuid user_id FK
+      text factor_type
+      text status
+      timestamptz created_at
+      timestamptz updated_at
+    }
+
+    PUBLIC_NHAN_VIEN {
+      varchar MaNV PK
+      uuid user_id FK
+      text HoTen
+      varchar role
+      varchar MaKho
+      varchar TrangThai
+    }
+
+    STOCK_TRANSFER {
+      uuid id PK
+      uuid sender_id FK
+      uuid receiver_id FK
+      transfer_status status
+      timestamptz created_at
+    }
+
+    RETAILER_SUPPLIER_LINK {
+      uuid id PK
+      uuid retailer_user_id FK
+      varchar supplier_ma_ncc
+      timestamptz created_at
+    }
+
+    PROVIDER_WAREHOUSE_LINK {
+      uuid id PK
+      uuid provider_user_id FK
+      varchar ma_kho
+      bool is_manual
+      timestamptz created_at
+    }
+
+    AUTH_USERS ||--o{ AUTH_SESSIONS : "dang_nhap"
+    AUTH_SESSIONS ||--o{ AUTH_REFRESH_TOKENS : "cap_lai_token"
+
+    AUTH_USERS ||--o{ AUTH_IDENTITIES : "nha_cung_cap_auth"
+    AUTH_USERS ||--o{ AUTH_MFA_FACTORS : "da_yeu_to"
+
+    AUTH_USERS ||--o| PUBLIC_NHAN_VIEN : "dong_bo_profile"
+
+    AUTH_USERS ||--o{ STOCK_TRANSFER : "gui_chuyen_kho"
+    AUTH_USERS ||--o{ STOCK_TRANSFER : "nhan_chuyen_kho"
+
+    AUTH_USERS ||--o{ RETAILER_SUPPLIER_LINK : "retailer_link"
+    AUTH_USERS ||--o{ PROVIDER_WAREHOUSE_LINK : "provider_link"

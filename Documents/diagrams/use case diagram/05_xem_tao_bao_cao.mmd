@@ -1,0 +1,45 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#ecfeff,stroke:#0e7490,stroke-width:2px,color:#164e63;
+    classDef report fill:#cffafe,stroke:#0891b2,stroke-width:2px,color:#083344;
+    classDef limit fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#78350f;
+
+    A[Admin]:::actor
+    P[Provider]:::actor
+    R[Retailer]:::actor
+    S[Staff]:::actor
+
+    R1([Báo cáo doanh thu vùng]):::report
+    R2([Báo cáo tồn kho toàn quốc]):::report
+    R3([Báo cáo top bán chạy]):::report
+    R4([Báo cáo lợi nhuận]):::report
+    R5([Báo cáo lịch sử hóa đơn nâng cao]):::report
+    EX([Export CSV/PDF/Excel]):::report
+    L1([Giới hạn Provider chỉ xem tồn kho]):::limit
+    L2([Retailer xem hóa đơn trong khu vực]):::limit
+    L3([Staff chỉ xem hóa đơn do bản thân tạo]):::limit
+
+    A --> R1
+    A --> R2
+    A --> R3
+    A --> R4
+    A --> R5
+
+    P --> R2
+    P -.policy.-> L1
+
+    R --> R1
+    R --> R2
+    R --> R3
+    R --> R4
+    R --> R5
+    R -.policy.-> L2
+
+    S --> R5
+    S -.policy.-> L3
+
+    R1 --> EX
+    R2 --> EX
+    R3 --> EX
+    R4 --> EX
+    R5 --> EX

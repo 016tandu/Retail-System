@@ -1,0 +1,25 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'lineColor': '#334155', 'primaryColor': '#ffffff'}}}%%
+flowchart LR
+    classDef actor fill:#ede9fe,stroke:#6d28d9,stroke-width:2px,color:#4c1d95;
+    classDef usecase fill:#ddd6fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+    classDef pending fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d;
+
+    B[Cấp trên trực tiếp]:::actor
+    S[Cấp dưới trực tiếp]:::actor
+
+    UC1([Tạo tài khoản user mới]):::usecase
+    UC2([Đổi vai trò Promote/Demote]):::usecase
+    UC3([Sa thải/Kích hoạt lại cấp dưới]):::usecase
+    UC4([Cập nhật hồ sơ cá nhân]):::usecase
+    UC5([Gửi notice nghỉ việc]):::pending
+    UC6([Duyệt/Từ chối notice]):::usecase
+
+    B --> UC1
+    B --> UC2
+    B --> UC3
+    B --> UC6
+
+    S --> UC4
+    S --> UC5
+
+    UC5 -.đưa vào.-> UC6

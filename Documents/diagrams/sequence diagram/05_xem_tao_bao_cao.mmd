@@ -1,0 +1,32 @@
+﻿%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#eff6ff', 'primaryBorderColor': '#2563eb', 'lineColor': '#334155'}}}%%
+sequenceDiagram
+    autonumber
+    actor U as Người dùng hợp lệ
+    participant FE as ReportsPage / InvoiceHistoryWorkspace
+    participant RPC as RPC báo cáo
+    participant DB as Dữ liệu nghiệp vụ
+
+    U->>FE: Chọn loại báo cáo + bộ lọc
+    FE->>FE: Xác định report type
+
+    alt Doanh thu vùng
+        FE->>RPC: rpc(doanh_thu_vung)
+        RPC->>DB: Tổng hợp HOA_DON theo vùng + thời gian
+    else Tồn kho toàn quốc
+        FE->>RPC: rpc(ton_kho_toan_quoc)
+        RPC->>DB: Tổng hợp TON_KHO theo kho/khu vực
+    else Top bán chạy
+        FE->>RPC: rpc(top_selling_products)
+        RPC->>DB: Tổng hợp CT_HOA_DON theo sản phẩm
+    else Lợi nhuận
+        FE->>RPC: rpc(calculate_profitability)
+        RPC->>DB: Tổng hợp doanh thu/chi phí
+    else Lịch sử hóa đơn (advanced)
+        FE->>DB: Query có filter theo role và phạm vi
+        DB-->>FE: Dataset invoice history
+    end
+
+    RPC-->>FE: Dataset báo cáo
+    FE-->>U: Render bảng + biểu đồ
+    U->>FE: Export CSV/PDF/Excel
+    FE-->>U: Tải file báo cáo
