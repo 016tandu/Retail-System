@@ -1,19 +1,7 @@
-﻿#let ui-placeholder(file-name, caption-text, h: 65mm) = figure(
+#let ui-placeholder(file-name, caption-text, h: 65mm) = figure(
   kind: image,
   placement: none,
-  rect(
-    width: 100%,
-    height: h,
-    stroke: 0.8pt + luma(150),
-    fill: luma(245),
-    inset: 8pt,
-  )[
-    #align(center + horizon, [
-      #strong[Ảnh giao diện cần chèn]
-      #linebreak()
-      Tên file đề xuất: #file-name
-    ])
-  ],
+  image("../" + file-name, width: 100%, height: h, fit: "contain"),
   caption: caption-text,
 )
 
