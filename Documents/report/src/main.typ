@@ -33,7 +33,6 @@
 #set heading(numbering: none)
 #show table.cell: set text(12pt)
 #show heading.where(level: 1): it => [#pagebreak(weak: true) #it]
-#show heading.where(level: 2): it => [#pagebreak(weak: true) #it]
 
 #cover-page()
 
